@@ -8,7 +8,7 @@
 # Introduction
 A Blazor wrapper for the [File System](https://fs.spec.whatwg.org/) browser API.
 
-The API standardizes ways to handle files and directories. It also enables access to the **origin private file system** which is a virtual sandboxed file system. This project implements a wrapper around the API for Blazor so that we can easily and safely interact with from Blazor.
+The API standardizes ways to handle files and directories. It also enables access to the **origin private file system** which is a virtual sandboxed file system. This project implements a wrapper around the API for Blazor so that we can easily and safely interact with it from Blazor.
 
 _Disclaimer: This wrapper is still being developed so API coverage is limited._
 
