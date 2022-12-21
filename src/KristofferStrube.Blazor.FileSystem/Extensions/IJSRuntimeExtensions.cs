@@ -4,22 +4,22 @@ namespace KristofferStrube.Blazor.FileSystem.Extensions;
 
 internal static class IJSRuntimeExtensions
 {
-    internal static async Task<IJSObjectReference> GetHelperAsync(this IJSRuntime jSRuntime, FileSystemAccessOptions options)
+    internal static async Task<IJSObjectReference> GetHelperAsync(this IJSRuntime jSRuntime, FileSystemOptions options)
     {
         return await GetHelperAsync<IJSObjectReference>(jSRuntime, options);
     }
 
-    internal static async Task<IJSInProcessObjectReference> GetInProcessHelperAsync(this IJSRuntime jSRuntime, FileSystemAccessOptions options)
+    internal static async Task<IJSInProcessObjectReference> GetInProcessHelperAsync(this IJSRuntime jSRuntime, FileSystemOptions options)
     {
         return await GetHelperAsync<IJSInProcessObjectReference>(jSRuntime, options);
     }
 
-    private static async Task<T> GetHelperAsync<T>(IJSRuntime jSRuntime, FileSystemAccessOptions options)
+    private static async Task<T> GetHelperAsync<T>(IJSRuntime jSRuntime, FileSystemOptions options)
     {
         return await jSRuntime.InvokeAsync<T>("import", GetScriptPath(options));
     }
 
-    private static string GetScriptPath(FileSystemAccessOptions options)
+    private static string GetScriptPath(FileSystemOptions options)
     {
         return options.FullScriptPath;
     }

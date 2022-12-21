@@ -1,12 +1,11 @@
 ﻿using KristofferStrube.Blazor.FileAPI;
-using KristofferStrube.Blazor.FileSystem.Extensions;
 using KristofferStrube.Blazor.Streams;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// <see href="https://wicg.github.io/file-system-access/#api-filesystemwritablefilestream">FileSystemWritableFileStream browser specs</see>
+/// <see href="https://fs.spec.whatwg.org/#filesystemwritablefilestream">FileSystemWritableFileStream browser specs</see>
 /// </summary>
 public class FileSystemWritableFileStream : WritableStream
 {
