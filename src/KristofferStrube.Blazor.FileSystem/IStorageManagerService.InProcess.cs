@@ -1,13 +1,6 @@
-﻿using Microsoft.JSInterop;
+﻿namespace KristofferStrube.Blazor.FileSystem;
 
-namespace KristofferStrube.Blazor.FileSystem
+public interface IStorageManagerServiceInProcess : IStorageManagerService
 {
-    public interface IStorageManagerServiceInProcess :
-        IStorageManagerService<
-            FileSystemFileHandleInProcess,
-            FileSystemDirectoryHandleInProcess,
-            IJSInProcessObjectReference>
-    {
-        new Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync();
-    }
+    new Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync();
 }

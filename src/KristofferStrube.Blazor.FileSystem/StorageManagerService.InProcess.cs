@@ -2,29 +2,26 @@ using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
-public class StorageManagerServiceInProcess :
-    BaseStorageManagerService<
-        FileSystemFileHandleInProcess,
-        FileSystemDirectoryHandleInProcess,
-        IJSInProcessObjectReference>,
-    IStorageManagerServiceInProcess, IStorageManagerService
+public class StorageManagerServiceInProcess : StorageManagerService, IStorageManagerServiceInProcess
 {
-    public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime)
+    public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
+
+    /// <summary>
+    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// </summary>
+    /// <returns></returns>
+    public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
     {
+        return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
     }
 
-    protected override async Task<FileSystemDirectoryHandleInProcess> CreateDirectoryHandleAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, FileSystemOptions options)
+    /// <summary>
+    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// </summary>
+    /// <returns></returns>
+    public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
     {
-        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, jSReference, options);
-    }
-
-    protected override async Task<FileSystemFileHandleInProcess> CreateFileHandleAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, FileSystemOptions options)
-    {
-        return await FileSystemFileHandleInProcess.CreateAsync(jSRuntime, jSReference, options);
-    }
-
-    async Task<FileSystemDirectoryHandle> IStorageManagerService<FileSystemFileHandle, FileSystemDirectoryHandle, IJSObjectReference>.GetOriginPrivateDirectoryAsync()
-    {
-        return await this.GetOriginPrivateDirectoryAsync();
+        IJSInProcessObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("navigator.storage.getDirectory");
+        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options);
     }
 }
