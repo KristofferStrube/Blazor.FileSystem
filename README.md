@@ -5,7 +5,7 @@
 
 <!-- [![NuGet Downloads (official NuGet)](https://img.shields.io/nuget/dt/KristofferStrube.Blazor.FileSystem?label=NuGet%20Downloads)](https://www.nuget.org/packages/KristofferStrube.Blazor.FileSystem/)  -->
 
-# Introduction
+## Introduction
 A Blazor wrapper for the [File System](https://fs.spec.whatwg.org/) browser API.
 
 The API standardizes ways to handle files and directories. It also enables access to the **origin private file system** which is a virtual sandboxed file system. This project implements a wrapper around the API for Blazor so that we can easily and safely interact with it from Blazor.
@@ -17,10 +17,10 @@ On each page you can find the corresponding code for the example in the top righ
 
 On the [Status page](https://kristofferstrube.github.io/Blazor.FileSystem/Status) you can see how much of the WebIDL specs this wrapper has covered.
 
-# Related repositories
+## Related repositories
 The [Blazor.FileSystemAccess](https://github.com/KristofferStrube/Blazor.FileSystemAccess) library currently also have implementations for the types defined in this library, but will eventually change to use this library as a dependency.
 
-# Related articles
+## Related articles
 This repository was build with inspiration and help from the following series of articles:
 
 - [Wrapping JavaScript libraries in Blazor WebAssembly/WASM](https://blog.elmah.io/wrapping-javascript-libraries-in-blazor-webassembly-wasm/)
