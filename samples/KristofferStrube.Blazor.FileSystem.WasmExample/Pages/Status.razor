@@ -1,0 +1,143 @@
+﻿@page "/Status"
+
+@using HtmlAgilityPack;
+
+@inject HttpClient HttpClient
+@inject IJSRuntime JSRuntime
+
+<PageTitle>File System Access - Status</PageTitle>
+
+@if (compareText is not null)
+{
+    <pre><code>
+            @((MarkupString)compareText)
+    </code></pre>
+}
+else
+{
+    <text>Loading WebIDL from specs ...</text>
+}
+
+@code {
+    private string? compareText;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var domString = await HttpClient.GetStringAsync("https://fs.spec.whatwg.org/#idl-index");
+
+            var dom = new HtmlDocument();
+            dom.LoadHtml(domString);
+            var idlIndexHeader = dom.GetElementbyId("idl-index");
+            var webIDLNode = idlIndexHeader.NextSibling.NextSibling;
+            var webIDLText = webIDLNode.InnerText;
+            // We normalize to indent with 4 spaces as that is inconsistent in the current WebIDL specs.
+            var fetchedLines = webIDLText.Replace("    ", "  ").Replace("\n  ", "\n    ").Split('\n');
+            var supportedLines = currentlySupportedWebIDL.Replace("<", "&lt;").Split('\n');
+            var compareLines = new List<string>();
+            var fetchedIndex = 0;
+            var supportedIndex = 0;
+            while (fetchedIndex < fetchedLines.Length || supportedIndex < supportedLines.Length)
+            {
+                var color = "pink";
+                if (fetchedIndex == fetchedLines.Length)
+                {
+                    color = "cyan";
+                    supportedIndex++;
+                    fetchedIndex--;
+                }
+                else if (supportedIndex == supportedLines.Length)
+                {
+                    color = "lemonchiffon";
+                }
+                else if (fetchedLines[fetchedIndex].Trim() == supportedLines[supportedIndex].Trim())
+                {
+                    color = "lightgreen";
+                    supportedIndex++;
+                }
+                compareLines.Add($"""<span style="background-color:{color};display:block;min-height:21px;">{fetchedLines[fetchedIndex++]}</span>""");
+            }
+            compareText = string.Join("", compareLines);
+            StateHasChanged();
+        }
+    }
+
+    private const string currentlySupportedWebIDL =
+            @"enum FileSystemHandleKind {
+  ""file"",
+  ""directory"",
+};
+
+[Exposed=(Window,Worker), SecureContext, Serializable]
+interface FileSystemHandle {
+  readonly attribute FileSystemHandleKind kind;
+  readonly attribute USVString name;
+
+  Promise<boolean> isSameEntry(FileSystemHandle other);
+};
+
+dictionary FileSystemCreateWritableOptions {
+  boolean keepExistingData = false;
+};
+
+[Exposed=(Window,Worker), SecureContext, Serializable]
+interface FileSystemFileHandle : FileSystemHandle {
+  Promise<File> getFile();
+  Promise<FileSystemWritableFileStream> createWritable(optional FileSystemCreateWritableOptions options = {});
+  [Exposed=DedicatedWorker]
+  Promise<FileSystemSyncAccessHandle> createSyncAccessHandle();
+};
+
+dictionary FileSystemGetFileOptions {
+  boolean create = false;
+};
+
+dictionary FileSystemGetDirectoryOptions {
+  boolean create = false;
+};
+
+dictionary FileSystemRemoveOptions {
+  boolean recursive = false;
+};
+
+[Exposed=(Window,Worker), SecureContext, Serializable]
+interface FileSystemDirectoryHandle : FileSystemHandle {
+  async iterable<USVString, FileSystemHandle>;
+
+  Promise<FileSystemFileHandle> getFileHandle(USVString name, optional FileSystemGetFileOptions options = {});
+  Promise<FileSystemDirectoryHandle> getDirectoryHandle(USVString name, optional FileSystemGetDirectoryOptions options = {});
+
+  Promise<undefined> removeEntry(USVString name, optional FileSystemRemoveOptions options = {});
+
+  Promise<sequence<USVString>?> resolve(FileSystemHandle possibleDescendant);
+};
+
+enum WriteCommandType {
+  ""write"",
+  ""seek"",
+  ""truncate"",
+};
+
+dictionary WriteParams {
+  required WriteCommandType type;
+  unsigned long long? size;
+  unsigned long long? position;
+  (BufferSource or Blob or USVString)? data;
+};
+
+typedef (BufferSource or Blob or USVString or WriteParams) FileSystemWriteChunkType;
+
+[Exposed=(Window,Worker), SecureContext]
+interface FileSystemWritableFileStream : WritableStream {
+  Promise<undefined> write(FileSystemWriteChunkType data);
+  Promise<undefined> seek(unsigned long long position);
+  Promise<undefined> truncate(unsigned long long size);
+};
+
+[SecureContext]
+partial interface StorageManager {
+  Promise<FileSystemDirectoryHandle> getDirectory();
+};";
+
+}

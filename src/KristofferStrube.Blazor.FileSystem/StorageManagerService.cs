@@ -16,7 +16,7 @@ public class StorageManagerService : IStorageManagerService
     }
 
     /// <summary>
-    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
     /// </summary>
     /// <returns></returns>
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync()
@@ -25,7 +25,7 @@ public class StorageManagerService : IStorageManagerService
     }
 
     /// <summary>
-    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
     /// </summary>
     /// <returns></returns>
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync(FileSystemOptions options)

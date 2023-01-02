@@ -7,7 +7,7 @@ public class StorageManagerServiceInProcess : StorageManagerService, IStorageMan
     public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
 
     /// <summary>
-    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
     /// </summary>
     /// <returns></returns>
     public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
@@ -16,7 +16,7 @@ public class StorageManagerServiceInProcess : StorageManagerService, IStorageMan
     }
 
     /// <summary>
-    /// <see href="https://wicg.github.io/file-system-access/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
     /// </summary>
     /// <returns></returns>
     public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)

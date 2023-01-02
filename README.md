@@ -10,11 +10,15 @@ A Blazor wrapper for the [File System](https://fs.spec.whatwg.org/) browser API.
 
 The API standardizes ways to handle files and directories. It also enables access to the **origin private file system** which is a virtual sandboxed file system. This project implements a wrapper around the API for Blazor so that we can easily and safely interact with it from Blazor.
 
-_Disclaimer: This wrapper is still being developed so API coverage is limited._
+## Demo
+The sample project can be demoed at https://kristofferstrube.github.io/Blazor.FileSystem/
+
+On each page you can find the corresponding code for the example in the top right corner.
+
+On the [Status page](https://kristofferstrube.github.io/Blazor.FileSystem/Status) you can see how much of the WebIDL specs this wrapper has covered.
 
 # Related repositories
-Wrapper for most of the types defined in the File System API are currently wrapped in the following repository but will be moved to this repository.
-- https://github.com/KristofferStrube/Blazor.FileSystemAccess
+The [Blazor.FileSystemAccess](https://github.com/KristofferStrube/Blazor.FileSystemAccess) library currently also have implementations for the types defined in this library, but will eventually change to use this library as a dependency.
 
 # Related articles
 This repository was build with inspiration and help from the following series of articles:

@@ -1,3 +1,52 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@inject IStorageManagerService StorageManagerService
+@inject NavigationManager NavigationManager
+
+<PageTitle>File System Access - Minimal Viable Example</PageTitle>
+
+<h2>Minimal Viable Example</h2>
+<p>
+    Using the <a href="https://github.com/KristofferStrube/Blazor.FileSystem">Blazor.FileSystem</a> library we can handle and store references to files.
+    The file handles can be supplied from multiple other APIs (like <a href="https://wicg.github.io/file-system-access/">File System Access</a> or <a href="https://wicg.github.io/web-app-launch/">Web App Launch Handler</a>).
+</p>
+<p>
+    Alternatively you can read, write, create, and delete files and folders in a sandboxed environment called the <b>Origin Private File System</b> which is made available through the <code>StorageManagerService</code> (or <code>StorageManagerServiceInProcess</code> for WASM) in this library.
+</p>
+<p>
+    Below we see a sample of a file called <code>file.txt</code> that has been opened from your <b>Origin Private File System</b>. The file is local to this domain in your browser, but is persisted accross page loads.
+    <nobr>Try to writing in the textarea and then <a @onclick="Reload" href="">reload this page.</a></nobr>
+</p>
+
+@if (text is not null)
+{
+    <textarea style="width:100%;height:40vh;" value=@text @oninput=TextAreaChanged></textarea>
+}
+
+@code {
+    string? text = null;
+    FileSystemFileHandle? fileHandle;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var directoryHandle = await StorageManagerService.GetOriginPrivateDirectoryAsync();
+        fileHandle = await directoryHandle.GetFileHandleAsync("file.txt", new() { Create = true });
+        var file = await fileHandle.GetFileAsync();
+        text = await file.TextAsync();
+    }
+
+    async Task TextAreaChanged(ChangeEventArgs eventArgs)
+    {
+        if (fileHandle is not null && eventArgs.Value is string value)
+        {
+            var writable = await fileHandle.CreateWritableAsync();
+            await writable.WriteAsync(value);
+            await writable.CloseAsync();
+        }
+    }
+
+    void Reload()
+    {
+        NavigationManager.NavigateTo("./", true);
+    }
+}
