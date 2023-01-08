@@ -217,31 +217,34 @@
                 continue;
             }
 
-            // Calculate hash of note content.
-            using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(note.Content.First());
-            byte[] hashBytes = sha1.ComputeHash(inputBytes);
-            var fileName = Convert.ToHexString(hashBytes) + ".msgpack.json";
-
-            // Check if we have suffix tree for the note in
-            var fileHandle = await OriginPrivateDirectoryHandle.GetFileHandleAsync(fileName, new() { Create = true });
-            var file = await fileHandle.GetFileAsync();
-            if (await file.GetSizeAsync() > 0)
+            if (OriginPrivateDirectoryHandle is not null)
             {
-                suffixTrees.Add(note.Id, MessagePack.MessagePackSerializer.Deserialize<NaiveSuffixTree>(await file.ArrayBufferAsync())!);
-                Console.WriteLine("We hit something we had already built.");
-                continue;
+                // Calculate hash of note content.
+                using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(note.Content.First());
+                byte[] hashBytes = sha1.ComputeHash(inputBytes);
+                var fileName = Convert.ToHexString(hashBytes) + ".msgpack.json";
+
+                // Check if we have suffix tree for the note in
+                var fileHandle = await OriginPrivateDirectoryHandle.GetFileHandleAsync(fileName, new() { Create = true });
+                var file = await fileHandle.GetFileAsync();
+                if (await file.GetSizeAsync() > 0)
+                {
+                    suffixTrees.Add(note.Id, MessagePack.MessagePackSerializer.Deserialize<NaiveSuffixTree>(await file.ArrayBufferAsync())!);
+                    Console.WriteLine("We hit something we had already built.");
+                    continue;
+                }
+
+                // Create Suffix Tree.
+                var suffixTree = new NaiveSuffixTree(note.Content.First().ToLower());
+
+                // Setup file.
+                var writer = await fileHandle.CreateWritableAsync(new() { KeepExistingData = false });
+
+                // Write Suffix Tree.
+                await writer.WriteAsync(MessagePack.MessagePackSerializer.Serialize(suffixTree));
+                await writer.CloseAsync();
             }
-
-            // Create Suffix Tree.
-            var suffixTree = new NaiveSuffixTree(note.Content.First().ToLower());
-
-            // Setup file.
-            var writer = await fileHandle.CreateWritableAsync(new() { KeepExistingData = false });
-
-            // Write Suffix Tree.
-            await writer.WriteAsync(MessagePack.MessagePackSerializer.Serialize(suffixTree));
-            await writer.CloseAsync();
 
             suffixTrees.Add(note.Id, suffixTree);
             Console.WriteLine("We hit something new.");
