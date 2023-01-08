@@ -3,6 +3,8 @@
 @using KristofferStrube.ActivityStreams;
 @using KristofferStrube.Blazor.FileSystem.WasmExample.Search;
 @using static System.Text.Json.JsonSerializer;
+@using System.Reactive.Linq;
+@using System.Reactive.Subjects;
 
 @inject IStorageManagerService StorageManagerService
 @inject NavigationManager NavigationManager
@@ -22,7 +24,7 @@
     <center>-- Loaded (@loaded/@notes.Length) Notes --</center>
 </div>
 <div class="input-group mb-3">
-    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after=@Search />
+    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="() => searchSubject.OnNext(search)" />
     <span class="input-group-text" id="search-addon">🔍</span>
 </div>
 
@@ -41,14 +43,21 @@
 
 @code {
     string search = "";
-
     Note[] notes = Array.Empty<Note>();
-
     (string Resource, SamLine[] Matches)[] results = Array.Empty<(string Resource, SamLine[] Matches)>();
-
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
-
     int loaded = 0;
+    readonly Subject<string> searchSubject = new();
+
+    protected override void OnInitialized()
+    {
+        searchSubject
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Subscribe(updates =>
+            {
+                Search();
+            });
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -125,6 +134,8 @@
         if (string.IsNullOrWhiteSpace(search))
         {
             results = suffixTrees.Keys.Select(key => (key, Array.Empty<SamLine>())).ToArray();
+
+            StateHasChanged();
             return;
         }
 
