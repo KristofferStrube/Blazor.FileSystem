@@ -5,6 +5,7 @@
 @using static System.Text.Json.JsonSerializer;
 @using System.Reactive.Linq;
 @using System.Reactive.Subjects;
+@using System.Diagnostics;
 
 @inject IStorageManagerService StorageManagerService
 @inject NavigationManager NavigationManager
@@ -21,21 +22,32 @@
 </p>
 
 <div>
-    <center>-- Loaded (@loaded/@notes.Length) Notes --</center>
+    <center>-- Loaded (@suffixTrees.Count()/@notes.Length) Notes --</center>
 </div>
 <div class="input-group mb-3">
-    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="Search" />
+    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="() => SearchAsync(search)" />
     <span class="input-group-text" id="search-addon">🔍</span>
 </div>
 
-@if (results.Length > 0 && results.First().Matches.Length > 0)
+@if (results.Count() > 0 && results.First().Matches.Length > 0)
 {
     <div style="margin:10; border:solid lightgreen 1px;color:green;border-radius:5px;margin-top:10px;padding-right:10px;padding-left:10px;">
-        <center><span style="color:black;">@results.Length results</span> <span style="color:grey;">(@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) where matches)</span></center>
+        <center>
+            <span>
+                @results.Count() results
+            </span>
+            @if (results.Count() > 10)
+            {
+                <i>- only showing 10</i>
+            }
+            <span style="color:grey;">
+                (@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) where matches)
+            </span>
+        </center>
     </div>
 }
 
-@foreach (var result in results)
+@foreach (var result in results.Take(10))
 {
     var note = notes.Single(note => note.Id == result.Resource);
     <NotePresenter Note="note" />
@@ -44,12 +56,27 @@
 @code {
     string search = "";
     Note[] notes = Array.Empty<Note>();
-    (string Resource, SamLine[] Matches)[] results = Array.Empty<(string Resource, SamLine[] Matches)>();
+    List<(string Resource, SamLine[] Matches)> results = new();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
-    int loaded = 0;
+    CancellationTokenSource searchCancellationSource = new CancellationTokenSource();
+
+    Stopwatch renderWatch = Stopwatch.StartNew();
+
+    protected override bool ShouldRender()
+    {
+        var should = base.ShouldRender();
+        if (should)
+        {
+            renderWatch = Stopwatch.StartNew();
+        }
+        return should;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        renderWatch.Stop();
+        Console.WriteLine($"Took {renderWatch.ElapsedMilliseconds} (ms) to render.");
+
         if (!firstRender) return;
 
         Console.WriteLine("Started download.");
@@ -71,6 +98,7 @@
             {
                 continue;
             }
+            StateHasChanged();
 
             // Calculate hash of note content.
             using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
@@ -85,13 +113,10 @@
             if (await file.GetSizeAsync() > 0)
             {
                 suffixTrees.Add(note.Id, MessagePack.MessagePackSerializer.Deserialize<NaiveSuffixTree>(await file.ArrayBufferAsync())!);
-                loaded++;
                 Console.WriteLine("We hit something we had already built.");
-                StateHasChanged();
                 continue;
             }
 
-            Console.WriteLine("We hit something new.");
             // Create Suffix Tree.
             var suffixTree = new NaiveSuffixTree(note.Content.First().ToLower());
 
@@ -103,41 +128,63 @@
             await writer.CloseAsync();
 
             suffixTrees.Add(note.Id, suffixTree);
-
-            loaded++;
-            StateHasChanged();
+            Console.WriteLine("We hit something new.");
         }
 
         Console.WriteLine("Finished building trees.");
 
-        Search();
+        await SearchAsync(search);
+        StateHasChanged();
 
         Console.WriteLine("Finished search.");
     }
 
-    protected void Search()
+    protected async Task SearchAsync(string search)
     {
+        searchCancellationSource.Cancel();
+        searchCancellationSource = new CancellationTokenSource();
+        var searchCancellationToken = searchCancellationSource.Token;
+
+        var stopwatch = Stopwatch.StartNew();
+
+        results = new List<(string Resource, SamLine[] Matches)>(suffixTrees.Count());
+
         if (string.IsNullOrWhiteSpace(search))
         {
-            results = suffixTrees.Keys.Select(key => (key, Array.Empty<SamLine>())).ToArray();
-
-            StateHasChanged();
+            foreach (var suffixTreeKey in suffixTrees.Keys)
+            {
+                results.Add((suffixTreeKey, Array.Empty<SamLine>()));
+                if (searchCancellationToken.IsCancellationRequested) {
+                    await Task.FromCanceled(searchCancellationToken);
+                    return;
+                }
+            }
+            stopwatch.Stop();
+            Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} (ms) to search for \"{search}\"");
+            await Task.CompletedTask;
             return;
         }
 
-        results = suffixTrees
-            .Select(suffixTree =>
-                (
-                    Resource: suffixTree.Key,
-                    Matches: suffixTree.Value
-                        .SearchForAllApproximateOccurences(suffixTree.Key, "simple", search.ToLower(), 1).Reverse().ToArray()
-                )
-            )
-            .Where(result => result.Matches.Length > 0)
+        foreach (var suffixTree in suffixTrees)
+        {
+            var searchResult = suffixTree.Value.SearchForAllApproximateOccurences(suffixTree.Key, "simple", search.ToLower(), 1).Reverse().ToArray();
+            if (searchResult.Length > 0)
+            {
+                results.Add((Resource: suffixTree.Key, Matches: searchResult));
+            }
+            await Task.Delay(1);
+            if (searchCancellationToken.IsCancellationRequested) {
+                Console.WriteLine($"Canceled search progress ({suffixTrees.ToList().IndexOf(suffixTree)}/{suffixTrees.Count()}) for \"{search}\"");
+                await Task.FromCanceled(searchCancellationToken);
+                return;
+            }
+        }
+        results = results
             .OrderByDescending(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q')))
             .ThenByDescending(result => result.Matches.Length)
-            .ToArray();
+            .ToList();
 
-        StateHasChanged();
+        stopwatch.Stop();
+        Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} (ms) to search for \"{search}\"");
     }
 }
