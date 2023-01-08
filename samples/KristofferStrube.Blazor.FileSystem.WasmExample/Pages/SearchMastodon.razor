@@ -275,19 +275,20 @@
 
         var stopwatch = Stopwatch.StartNew();
 
-        results = new List<(string Resource, SamLine[] Matches)>(suffixTrees.Count());
+        var newResults = new List<(string Resource, SamLine[] Matches)>(suffixTrees.Count());
 
         if (string.IsNullOrWhiteSpace(search))
         {
             foreach (var suffixTreeKey in suffixTrees.Keys)
             {
-                results.Add((suffixTreeKey, Array.Empty<SamLine>()));
+                newResults.Add((suffixTreeKey, Array.Empty<SamLine>()));
                 if (searchCancellationToken.IsCancellationRequested)
                 {
                     await Task.FromCanceled(searchCancellationToken);
                     return;
                 }
             }
+            results = newResults;
             stopwatch.Stop();
             resultTime = null;
             Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} (ms) to search for \"{search}\"");
@@ -307,10 +308,10 @@
             var searchResult = suffixTree.Value.SearchForAllApproximateOccurences(suffixTree.Key, "simple", search.ToLower(), 1).Reverse().ToArray();
             if (searchResult.Length > 0)
             {
-                results.Add((Resource: suffixTree.Key, Matches: searchResult));
+                newResults.Add((Resource: suffixTree.Key, Matches: searchResult));
             }
         }
-        results = results
+        results = newResults
             .OrderByDescending(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q')))
             .ThenByDescending(result => result.Matches.Length)
             .ToList();
