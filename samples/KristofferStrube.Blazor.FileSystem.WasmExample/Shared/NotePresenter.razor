@@ -34,7 +34,7 @@
     @if (Note.Attachment?.FirstOrDefault(attactment => attactment is Document && attactment.MediaType?.StartsWith("image") is true) is Document { } image && image.Url?.FirstOrDefault() is Link { Href: { } imageHref })
     {
         <div style="display:flex;justify-content:center;">
-            <img src="@imageHref" style="height:300px;max-width:100%;" alt="@image.Name?.First()" />
+            <img src="@imageHref" style="max-height:300px;max-width:100%;" alt="@image.Name?.First()" />
         </div>
     }
     <small><i><a style="color:grey" href="@Note.Id">Open on mastodon</a></i></small>

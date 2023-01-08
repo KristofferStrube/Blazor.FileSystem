@@ -30,6 +30,7 @@ a, .btn-link {
 
 .content {
     padding-top: 1.1rem;
+    overflow-x:hidden;
 }
 
 .valid.modified:not([type=checkbox]) {
