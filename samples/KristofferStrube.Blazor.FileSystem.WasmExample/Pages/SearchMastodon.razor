@@ -15,10 +15,15 @@
 
 <h2>Search Mastodon</h2>
 <p>
-    This sample page <a href="https://github.com/KristofferStrube/Blazor.FileSystem">Blazor.FileSystem</a> together with <a href="https://github.com/KristofferStrube/ActivityStreams">KristofferStrube/ActivityStream</a> to load the posts of a user on Mastodon, create search trees of their content, and store these search trees in the <b>Origin Private File System</b> so that they can be re-used on reloads or recurring searches.
+    This sample page uses <a href="https://github.com/KristofferStrube/Blazor.FileSystem">Blazor.FileSystem</a> together with <a href="https://github.com/KristofferStrube/ActivityStreams">KristofferStrube/ActivityStream</a> to load a Mastodon user's posts, create search trees of their content, and store these search trees in the <b>Origin Private File System</b> so that they can be re-used on reloads or recurring searches.
 </p>
 <p>
-    The below example shows a collection of posts from my profile on Mastodon. You can search in them with full text search. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
+    The <a href="https://fs.spec.whatwg.org/">File System API</a> is only supported on few browsers currently, but most major vendors have committed to support it in the near future. So you might need to install alpha/beta release of your browser for this to work.
+    <br />
+    <small style="color:grey;">(This is the case for Chrome on mobile devices.)</small>
+</p>
+<p>
+    You can make full text searches in my newest posts below once they have been downloaded. You can also download the posts of another user by typing in their identifier. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
 </p>
 
 <div class="input-group mb-3">
