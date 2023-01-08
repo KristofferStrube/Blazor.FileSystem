@@ -34,15 +34,19 @@
     <div style="margin:10; border:solid lightgreen 1px;color:green;border-radius:5px;margin-top:10px;padding-right:10px;padding-left:10px;">
         <center>
             <span>
-                @results.Count() results
+                Found @results.Count() results
             </span>
             @if (results.Count() > 10)
             {
-                <i>- only showing 10</i>
+                <i>(only showing 10)</i>
             }
-            <span style="color:grey;">
-                (@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) where matches)
-            </span>
+            @if (resultTime is long time)
+            {
+                <span> in @time (ms)</span>
+            }
+            <small style="color:grey;">
+                (@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) were perfect matches)
+            </small>
         </center>
     </div>
 }
@@ -50,15 +54,18 @@
 @foreach (var result in results.Take(10))
 {
     var note = notes.Single(note => note.Id == result.Resource);
-    <NotePresenter Note="note" />
+    <NotePresenter Note="note" @key=note.Id />
 }
 
 @code {
+    string profile = "@kristofferstrube@hachyderm.io";
     string search = "";
     Note[] notes = Array.Empty<Note>();
     List<(string Resource, SamLine[] Matches)> results = new();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
+    CancellationTokenSource downloadCancellationSource = new CancellationTokenSource();
     CancellationTokenSource searchCancellationSource = new CancellationTokenSource();
+    long? resultTime = null;
 
     Stopwatch renderWatch = Stopwatch.StartNew();
 
@@ -79,13 +86,39 @@
 
         if (!firstRender) return;
 
+        await DownloadNewestPostsAsync(profile);
+    }
+
+    protected async Task DownloadNewestPostsAsync(string profile)
+    {
+        downloadCancellationSource.Cancel();
+        downloadCancellationSource = new CancellationTokenSource();
+        var downloadCancellationToken = searchCancellationSource.Token;
+
         Console.WriteLine("Started download.");
 
-        var outbox = await HttpClient.GetFromJsonAsync<IObjectOrLink[]>("https://kristoffer-strube.dk/API/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
+        var outboxResponse = await HttpClient.GetAsync($"https://kristoffer-strube.dk/API/mastodon/Outbox/{profile}", downloadCancellationToken)!;
+
+        if (!outboxResponse.IsSuccessStatusCode)
+        {
+            Console.WriteLine("BAD");
+            await Task.CompletedTask;
+            return;
+        }
 
         Console.WriteLine("Finished download.");
 
-        notes = outbox
+        var outbox = await outboxResponse.Content.ReadFromJsonAsync<IObjectOrLink[]>(cancellationToken: downloadCancellationToken);
+        // We have to check the response.
+
+        if (outbox is not IObjectOrLink[] outboxObjects)
+        {
+            Console.WriteLine("BAD");
+            await Task.CompletedTask;
+            return;
+        }
+
+        notes = outboxObjects
             .Where(item => item is Create create && create.Object.Count() > 0 && create.Object.First() is Note)
             .Select(item => (Note)((Create)item).Object.First()!)
             .ToArray();
@@ -160,6 +193,7 @@
                 }
             }
             stopwatch.Stop();
+            resultTime = null;
             Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} (ms) to search for \"{search}\"");
             await Task.CompletedTask;
             return;
@@ -167,16 +201,17 @@
 
         foreach (var suffixTree in suffixTrees)
         {
+            await Task.Delay(1);
+            if (searchCancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine($"Canceled search progress ({suffixTrees.ToList().IndexOf(suffixTree)}/{suffixTrees.Count()}) for \"{search}\"");
+                await Task.FromCanceled(searchCancellationToken);
+                return;
+            }
             var searchResult = suffixTree.Value.SearchForAllApproximateOccurences(suffixTree.Key, "simple", search.ToLower(), 1).Reverse().ToArray();
             if (searchResult.Length > 0)
             {
                 results.Add((Resource: suffixTree.Key, Matches: searchResult));
-            }
-            await Task.Delay(1);
-            if (searchCancellationToken.IsCancellationRequested) {
-                Console.WriteLine($"Canceled search progress ({suffixTrees.ToList().IndexOf(suffixTree)}/{suffixTrees.Count()}) for \"{search}\"");
-                await Task.FromCanceled(searchCancellationToken);
-                return;
             }
         }
         results = results
@@ -185,6 +220,7 @@
             .ToList();
 
         stopwatch.Stop();
-        Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} (ms) to search for \"{search}\"");
+        resultTime = stopwatch.ElapsedMilliseconds;
+        Console.WriteLine($"Took {resultTime} (ms) to search for \"{search}\"");
     }
 }
