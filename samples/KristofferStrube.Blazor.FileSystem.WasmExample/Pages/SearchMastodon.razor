@@ -1,0 +1,144 @@
+﻿@page "/SearchMastodon"
+
+@using KristofferStrube.ActivityStreams;
+@using KristofferStrube.Blazor.FileSystem.WasmExample.Search;
+@using static System.Text.Json.JsonSerializer;
+
+@inject IStorageManagerService StorageManagerService
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<PageTitle>File System - Search Mastodon</PageTitle>
+
+<h2>Search Mastodon</h2>
+<p>
+    This sample page <a href="https://github.com/KristofferStrube/Blazor.FileSystem">Blazor.FileSystem</a> together with <a href="https://github.com/KristofferStrube/ActivityStreams">KristofferStrube/ActivityStream</a> to load the posts of a user on Mastodon, create search trees of their content, and store these search trees in the <b>Origin Private File System</b> so that they can be re-used on reloads or recurring searches.
+
+</p>
+
+<div>
+    <center>-- Loaded (@loaded/@notes.Length) Notes --</center>
+</div>
+<div class="input-group mb-3">
+    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after=@Search />
+    <span class="input-group-text" id="search-addon">🔍</span>
+</div>
+
+@if (results.Length > 0 && results.First().Matches.Length > 0)
+{
+    <div style="margin:10; border:solid lightgreen 1px;color:green;border-radius:5px;margin-top:10px;padding-right:10px;padding-left:10px;">
+        <center><span style="color:black;">@results.Length results</span> <span style="color:grey;">(@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) where matches)</span></center>
+    </div>
+}
+
+@foreach (var result in results)
+{
+    var note = notes.Single(note => note.Id == result.Resource);
+    <NotePresenter Note="note" />
+}
+
+@code {
+    string search = "";
+
+    Note[] notes = Array.Empty<Note>();
+
+    (string Resource, SamLine[] Matches)[] results = Array.Empty<(string Resource, SamLine[] Matches)>();
+
+    Dictionary<string, NaiveSuffixTree> suffixTrees = new();
+
+    int loaded = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        Console.WriteLine("Started download.");
+
+        var outbox = await HttpClient.GetFromJsonAsync<OrderedCollectionPage>("https://kristoffer-strube.dk/API/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
+
+        Console.WriteLine("Finished download.");
+
+        if (outbox?.OrderedItems is null) return;
+
+        notes = outbox.OrderedItems
+            .Where(item => item is Create create && create.Object.Count() > 0 && create.Object.First() is Note)
+            .Select(item => (Note)((Create)item).Object.First()!)
+            .ToArray();
+
+        StateHasChanged();
+
+        foreach (Note note in notes)
+        {
+            if (suffixTrees.ContainsKey(note.Id))
+            {
+                continue;
+            }
+
+            using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
+            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(note.Content.First());
+            byte[] hashBytes = sha1.ComputeHash(inputBytes);
+            var fileName = Convert.ToHexString(hashBytes) + ".json";
+
+            // Check if we have suffix tree for the note in
+            var opfs = await StorageManagerService.GetOriginPrivateDirectoryAsync();
+            var fileHandle = await opfs.GetFileHandleAsync(fileName, new() { Create = true });
+            var file = await fileHandle.GetFileAsync();
+            if (await file.GetSizeAsync() > 0)
+            {
+                suffixTrees.Add(note.Id, Deserialize<NaiveSuffixTree>(await file.TextAsync())!);
+                loaded++;
+                Console.WriteLine("We hit something we had already built.");
+                Search();
+                StateHasChanged();
+                continue;
+            }
+
+            Console.WriteLine("We hit something new.");
+            // Create Suffix Tree.
+            var suffixTree = new NaiveSuffixTree(note.Content.First().ToLower());
+
+            // Setup file.
+            var writer = await fileHandle.CreateWritableAsync(new() { KeepExistingData = false });
+
+            // Write Suffix Tree.
+            await writer.WriteAsync(Serialize(suffixTree));
+            await writer.CloseAsync();
+
+            suffixTrees.Add(note.Id, suffixTree);
+
+            loaded++;
+            StateHasChanged();
+            Search();
+        }
+
+        Console.WriteLine("Finished building trees.");
+
+        Search();
+
+        Console.WriteLine("Finished search.");
+    }
+
+    protected void Search()
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            results = suffixTrees.Keys.Select(key => (key, Array.Empty<SamLine>())).ToArray();
+            return;
+        }
+
+        results = suffixTrees
+            .Select(suffixTree =>
+                (
+                    Resource: suffixTree.Key,
+                    Matches: suffixTree.Value
+                        .SearchForAllApproximateOccurences(suffixTree.Key, "simple", search.ToLower(), 1).Reverse().ToArray()
+                )
+            )
+            .Where(result => result.Matches.Length > 0)
+            .OrderByDescending(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q')))
+            .ThenByDescending(result => result.Matches.Length)
+            .ToArray();
+
+        StateHasChanged();
+    }
+}

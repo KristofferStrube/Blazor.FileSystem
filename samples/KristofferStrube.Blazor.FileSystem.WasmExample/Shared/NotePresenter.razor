@@ -1,0 +1,40 @@
+﻿@using KristofferStrube.ActivityStreams;
+
+<div style="border:solid #ddd 1px; border-radius:5px;margin-top:10px;padding:10px;max-width:100%;">
+    <div style="display:flex;flex-direction:row;">
+        @if (Note.AttributedTo?.First() is Person profile)
+        {
+            <div style="display:flex;flex-direction:column;">
+                @if (Note.InReplyTo?.First() is Link { Href: { } replyToHref })
+                {
+                    <small style="color:grey;">in reply to <a href="@replyToHref">@replyToHref.Segments.Last()</a></small>
+                }
+                <div style="display:flex;flex-direction:row;">
+                    @if (profile.Icon?.First() is Image profilePicture && profilePicture.Url?.First() is Link { Href: { } profilePictureHref })
+                    {
+                        <div style="width:50px;height:50px;margin-right:5px;">
+                            <img src="@profilePictureHref" style="border-radius:5px;max-width:50px;max-height:50px;" />
+                        </div>
+                    }
+                    <div style="display:flex;flex-direction:column;">
+                        <h6 style="margin-bottom:0;">@((MarkupString)(profile.Tag?.Aggregate(profile.Name?.First() ?? "", (acc, cur) => cur is KristofferStrube.ActivityStreams.Object obj && cur.Type.Contains("Emoji") ? acc.Replace(obj.Name.First(), obj.Icon.First() is IObject image ? $"<img src=\"{image.Url.First().Href}\" width=\"20px\" />" : "") : acc) ?? ""))</h6>
+                        @if (profile.Url?.First() is Link { Href: { } profileHref })
+                        {
+                            <a href="@profileHref" style="color:black;">@@@profile.PreferredUsername</a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div style="margin-left: auto;">
+                <small>@Note.Published?.ToShortTimeString() : @Note.Published?.ToShortDateString()</small>
+            </div>
+        }
+    </div>
+    @((MarkupString)(Note.Content!.First()))
+    <small><i><a style="color:grey" href="@Note.Id">Open on mastodon</a></i></small>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Note Note { get; set; }
+}

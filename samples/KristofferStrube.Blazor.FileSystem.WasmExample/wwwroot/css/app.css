@@ -40,6 +40,13 @@ a, .btn-link {
     outline: 1px solid red;
 }
 
+.invisible {
+    display: inline-block;
+    width: 0px;
+}
+
+.ellipsis::after {content: '…'}
+
 .validation-message {
     color: red;
 }
