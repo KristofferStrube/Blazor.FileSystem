@@ -21,34 +21,55 @@
     The below example shows a collection of posts from my profile on Mastodon. You can search in them with full text search. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
 </p>
 
-<div>
-    <center>-- Loaded (@suffixTrees.Count()/@notes.Length) Notes --</center>
-</div>
 <div class="input-group mb-3">
-    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="() => SearchAsync(search)" />
-    <span class="input-group-text" id="search-addon">🔍</span>
+    <input type="text" @bind=@profile @bind:event="oninput" @bind:after="() => DownloadNewestPostsAsync(profile)" placeholder=@("@username@domain") class="form-control" aria-label="Profile" aria-describedby="profile-addon" />
+    <span class="input-group-text" id="search-Profile">🐘</span>
 </div>
-
-@if (results.Count() > 0 && results.First().Matches.Length > 0)
+<div>
+    <center>
+        @if (profileFeedback is string feedback)
+        {
+            <span>@feedback</span>
+        }
+        <span style="display:inline-block;width:50px;">
+            @if (downloading)
+            {
+                <span>⏳</span>
+            }
+        </span>
+    </center>
+</div>
+@if (profileFeedback is null)
 {
-    <div style="margin:10; border:solid lightgreen 1px;color:green;border-radius:5px;margin-top:10px;padding-right:10px;padding-left:10px;">
-        <center>
-            <span>
-                Found @results.Count() results
-            </span>
-            @if (results.Count() > 10)
-            {
-                <i>(only showing 10)</i>
-            }
-            @if (resultTime is long time)
-            {
-                <span> in @time (ms)</span>
-            }
-            <small style="color:grey;">
-                (@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) were perfect matches)
-            </small>
-        </center>
+    <div>
+        <center>Loaded (@suffixTrees.Count()/@notes.Length) Notes</center>
     </div>
+    <div class="input-group mb-3">
+        <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="() => SearchAsync(search)" />
+        <span class="input-group-text" id="search-addon">🔍</span>
+    </div>
+
+    @if (results.Count() > 0 && results.First().Matches.Length > 0)
+    {
+        <div style="margin:10; border:solid lightgreen 1px;color:green;border-radius:5px;margin-top:10px;padding-right:10px;padding-left:10px;">
+            <center>
+                <span>
+                    Found @results.Count() results
+                </span>
+                @if (results.Count() > 10)
+                {
+                    <i>(only showing 10)</i>
+                }
+                @if (resultTime is long time)
+                {
+                    <span> in @time (ms)</span>
+                }
+                <small style="color:grey;">
+                    (@results.Count(result => result.Matches.Any(match => !match.Cigar.Contains('I') && !match.Cigar.Contains('D') && !match.Cigar.Contains('Q'))) were perfect matches)
+                </small>
+            </center>
+        </div>
+    }
 }
 
 @foreach (var result in results.Take(10))
@@ -60,12 +81,14 @@
 @code {
     string profile = "@kristofferstrube@hachyderm.io";
     string search = "";
+    string? profileFeedback;
     Note[] notes = Array.Empty<Note>();
     List<(string Resource, SamLine[] Matches)> results = new();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
     CancellationTokenSource downloadCancellationSource = new CancellationTokenSource();
     CancellationTokenSource searchCancellationSource = new CancellationTokenSource();
     long? resultTime = null;
+    bool downloading = false;
 
     Stopwatch renderWatch = Stopwatch.StartNew();
 
@@ -91,29 +114,58 @@
 
     protected async Task DownloadNewestPostsAsync(string profile)
     {
-        downloadCancellationSource.Cancel();
-        downloadCancellationSource = new CancellationTokenSource();
-        var downloadCancellationToken = searchCancellationSource.Token;
+        searchCancellationSource.Cancel();
+        searchCancellationSource = new CancellationTokenSource();
+        var searchCancellationToken = searchCancellationSource.Token;
+
+        results = new();
+        notes = Array.Empty<Note>();
+        suffixTrees = new();
+        downloading = false;
+
+        if (string.IsNullOrWhiteSpace(profile))
+        {
+            await Task.CompletedTask;
+            profileFeedback = "";
+            StateHasChanged();
+            return;
+        }
 
         Console.WriteLine("Started download.");
+        downloading = true;
+        HttpResponseMessage? outboxResponse = null;
 
-        var outboxResponse = await HttpClient.GetAsync($"https://kristoffer-strube.dk/API/mastodon/Outbox/{profile}", downloadCancellationToken)!;
-
-        if (!outboxResponse.IsSuccessStatusCode)
+        try
         {
-            Console.WriteLine("BAD");
+            outboxResponse = await HttpClient.GetAsync($"https://kristoffer-strube.dk/API/mastodon/Outbox/{profile}", searchCancellationToken)!;
+            downloading = false;
+        }
+        catch
+        {
+            profileFeedback = "Could not reach domain.";
+            downloading = false;
             await Task.CompletedTask;
             return;
         }
 
+        if (!outboxResponse?.IsSuccessStatusCode is true)
+        {
+            profileFeedback = await outboxResponse!.Content.ReadFromJsonAsync<string>(cancellationToken: searchCancellationToken);
+            profileFeedback ??= "Could not reach domain.";
+            await Task.CompletedTask;
+            return;
+        }
+
+        StateHasChanged();
+
         Console.WriteLine("Finished download.");
 
-        var outbox = await outboxResponse.Content.ReadFromJsonAsync<IObjectOrLink[]>(cancellationToken: downloadCancellationToken);
+        var outbox = await outboxResponse!.Content.ReadFromJsonAsync<IObjectOrLink[]>(cancellationToken: searchCancellationToken);
         // We have to check the response.
 
         if (outbox is not IObjectOrLink[] outboxObjects)
         {
-            Console.WriteLine("BAD");
+            profileFeedback = "Server Error occured.";
             await Task.CompletedTask;
             return;
         }
@@ -123,15 +175,24 @@
             .Select(item => (Note)((Create)item).Object.First()!)
             .ToArray();
 
+        profileFeedback = null;
+
         StateHasChanged();
 
         foreach (Note note in notes)
         {
+            StateHasChanged();
+            await Task.Delay(1);
+            if (searchCancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine($"Canceled indexing progress ({notes.ToList().IndexOf(note)}/{notes.Count()})");
+                await Task.FromCanceled(searchCancellationToken);
+                return;
+            }
             if (suffixTrees.ContainsKey(note.Id))
             {
                 continue;
             }
-            StateHasChanged();
 
             // Calculate hash of note content.
             using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
@@ -166,6 +227,12 @@
 
         Console.WriteLine("Finished building trees.");
 
+        if (searchCancellationToken.IsCancellationRequested)
+        {
+            await Task.FromCanceled(searchCancellationToken);
+            return;
+        }
+
         await SearchAsync(search);
         StateHasChanged();
 
@@ -187,7 +254,8 @@
             foreach (var suffixTreeKey in suffixTrees.Keys)
             {
                 results.Add((suffixTreeKey, Array.Empty<SamLine>()));
-                if (searchCancellationToken.IsCancellationRequested) {
+                if (searchCancellationToken.IsCancellationRequested)
+                {
                     await Task.FromCanceled(searchCancellationToken);
                     return;
                 }
