@@ -17,11 +17,15 @@
 <p>
     This sample page uses <a href="https://github.com/KristofferStrube/Blazor.FileSystem">Blazor.FileSystem</a> together with <a href="https://github.com/KristofferStrube/ActivityStreams">KristofferStrube/ActivityStream</a> to load a Mastodon user's posts, create search trees of their content, and store these search trees in the <b>Origin Private File System</b> so that they can be re-used on reloads or recurring searches.
 </p>
-<p>
-    The <a href="https://fs.spec.whatwg.org/">File System API</a> is only supported on few browsers, but most major vendors have committed to support it in the near future. So you might need to install alpha/beta release of your browser for this to work.
-    <br />
-    <small style="color:grey;">(This is the case for Chrome on mobile devices.)</small>
-</p>
+@if (OriginPrivateDirectoryHandle is null)
+{
+    <p style="color:red;">
+        The <a href="https://fs.spec.whatwg.org/">File System API</a> is only supported on few browsers, but most major vendors have committed to support it in the near future. So you might need to install alpha/beta release of your browser for this to work.
+        <br />
+        <small style="color:grey;">(This is the case for Chrome on mobile devices.)</small>
+    </p>
+    return;
+}
 <p>
     You can make full text searches in my newest posts below once they have been downloaded. You can also download the posts of another user by typing in their identifier. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
 </p>
@@ -87,6 +91,7 @@
     string profile = "@kristofferstrube@hachyderm.io";
     string search = "";
     string? profileFeedback;
+    FileSystemDirectoryHandle? OriginPrivateDirectoryHandle;
     Note[] notes = Array.Empty<Note>();
     List<(string Resource, SamLine[] Matches)> results = new();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
@@ -96,6 +101,18 @@
     bool downloading = false;
 
     Stopwatch renderWatch = Stopwatch.StartNew();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            OriginPrivateDirectoryHandle = await StorageManagerService.GetOriginPrivateDirectoryAsync();
+        }
+        catch
+        {
+            OriginPrivateDirectoryHandle = null;
+        }
+    }
 
     protected override bool ShouldRender()
     {
@@ -207,8 +224,7 @@
             var fileName = Convert.ToHexString(hashBytes) + ".msgpack.json";
 
             // Check if we have suffix tree for the note in
-            var opfs = await StorageManagerService.GetOriginPrivateDirectoryAsync();
-            var fileHandle = await opfs.GetFileHandleAsync(fileName, new() { Create = true });
+            var fileHandle = await OriginPrivateDirectoryHandle.GetFileHandleAsync(fileName, new() { Create = true });
             var file = await fileHandle.GetFileAsync();
             if (await file.GetSizeAsync() > 0)
             {
