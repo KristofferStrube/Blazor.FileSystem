@@ -54,7 +54,7 @@
 
         Console.WriteLine("Started download.");
 
-        var outbox = await HttpClient.GetFromJsonAsync<IObjectOrLink[]>("https://localhost:44365/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
+        var outbox = await HttpClient.GetFromJsonAsync<IObjectOrLink[]>("https://kristoffer-strube.dk/API/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
 
         Console.WriteLine("Finished download.");
 
