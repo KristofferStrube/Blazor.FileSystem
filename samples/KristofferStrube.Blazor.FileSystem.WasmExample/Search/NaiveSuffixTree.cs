@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using MessagePack;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace KristofferStrube.Blazor.FileSystem.WasmExample.Search;
@@ -6,19 +7,24 @@ namespace KristofferStrube.Blazor.FileSystem.WasmExample.Search;
 /// <remarks>
 /// This is taken from my groups project in the course Genome Scale Algorithms at Department of Bioinformatics at Aarhus University
 /// </remarks>
+[MessagePackObject]
 public class NaiveSuffixTree
 {
+    [Key(0)]
     public Node Root { get; set; }
+    [Key(1)]
     public int AlphabetSize { get; set; }
 
     // These are the alphabet.
+    [Key(2)]
     public Dictionary<char, int> CharToIndex { get; set; }
+    [Key(3)]
     public char[] IndexToChar { get; set; }
 
+    [Key(4)]
     // Mapped Content
     public int[] MappedSequence { get; set; }
 
-    [JsonConstructor]
     public NaiveSuffixTree()
     {
 

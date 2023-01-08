@@ -76,7 +76,7 @@
             using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(note.Content.First());
             byte[] hashBytes = sha1.ComputeHash(inputBytes);
-            var fileName = Convert.ToHexString(hashBytes) + ".json";
+            var fileName = Convert.ToHexString(hashBytes) + ".msgpack.json";
 
             // Check if we have suffix tree for the note in
             var opfs = await StorageManagerService.GetOriginPrivateDirectoryAsync();
@@ -84,10 +84,9 @@
             var file = await fileHandle.GetFileAsync();
             if (await file.GetSizeAsync() > 0)
             {
-                suffixTrees.Add(note.Id, Deserialize<NaiveSuffixTree>(await file.TextAsync())!);
+                suffixTrees.Add(note.Id, MessagePack.MessagePackSerializer.Deserialize<NaiveSuffixTree>(await file.ArrayBufferAsync())!);
                 loaded++;
                 Console.WriteLine("We hit something we had already built.");
-                Search();
                 StateHasChanged();
                 continue;
             }
@@ -100,14 +99,13 @@
             var writer = await fileHandle.CreateWritableAsync(new() { KeepExistingData = false });
 
             // Write Suffix Tree.
-            await writer.WriteAsync(Serialize(suffixTree));
+            await writer.WriteAsync(MessagePack.MessagePackSerializer.Serialize(suffixTree));
             await writer.CloseAsync();
 
             suffixTrees.Add(note.Id, suffixTree);
 
             loaded++;
             StateHasChanged();
-            Search();
         }
 
         Console.WriteLine("Finished building trees.");
