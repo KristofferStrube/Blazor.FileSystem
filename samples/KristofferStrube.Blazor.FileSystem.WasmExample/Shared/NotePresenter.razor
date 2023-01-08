@@ -37,6 +37,15 @@
             <img src="@imageHref" style="max-height:300px;max-width:100%;" alt="@image.Name?.First()" />
         </div>
     }
+    @if (Note.Attachment?.FirstOrDefault(attactment => attactment is Document && attactment.MediaType?.StartsWith("video") is true) is Document { } video && video.Url?.FirstOrDefault() is Link { Href: { } videoHref })
+    {
+        <div style="display:flex;justify-content:center;">
+            <video style="max-height:300px;max-width:100%;" controls autoplay="autoplay">
+                <source src="@videoHref" type="video/mp4">
+                @video.Name?.First()
+            </video>
+        </div>
+    }
     <small><i><a style="color:grey" href="@Note.Id">Open on mastodon</a></i></small>
 </div>
 
