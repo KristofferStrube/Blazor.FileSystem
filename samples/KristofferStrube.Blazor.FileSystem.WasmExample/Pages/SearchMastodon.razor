@@ -85,6 +85,7 @@
                 continue;
             }
 
+            // Calculate hash of note content.
             using System.Security.Cryptography.SHA1 sha1 = System.Security.Cryptography.SHA1.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(note.Content.First());
             byte[] hashBytes = sha1.ComputeHash(inputBytes);
