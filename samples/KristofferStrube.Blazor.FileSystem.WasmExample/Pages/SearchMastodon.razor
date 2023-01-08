@@ -24,7 +24,7 @@
     <center>-- Loaded (@loaded/@notes.Length) Notes --</center>
 </div>
 <div class="input-group mb-3">
-    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="() => searchSubject.OnNext(search)" />
+    <input type="text" @bind=@search @bind:event="oninput" placeholder="Search" class="form-control" aria-label="Search" aria-describedby="search-addon" @bind:after="Search" />
     <span class="input-group-text" id="search-addon">🔍</span>
 </div>
 
@@ -47,17 +47,6 @@
     (string Resource, SamLine[] Matches)[] results = Array.Empty<(string Resource, SamLine[] Matches)>();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
     int loaded = 0;
-    readonly Subject<string> searchSubject = new();
-
-    protected override void OnInitialized()
-    {
-        searchSubject
-            .Throttle(TimeSpan.FromMilliseconds(100))
-            .Subscribe(updates =>
-            {
-                Search();
-            });
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -65,13 +54,11 @@
 
         Console.WriteLine("Started download.");
 
-        var outbox = await HttpClient.GetFromJsonAsync<OrderedCollectionPage>("https://kristoffer-strube.dk/API/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
+        var outbox = await HttpClient.GetFromJsonAsync<IObjectOrLink[]>("https://localhost:44365/mastodon/Outbox/@kristofferstrube@hachyderm.io")!;
 
         Console.WriteLine("Finished download.");
 
-        if (outbox?.OrderedItems is null) return;
-
-        notes = outbox.OrderedItems
+        notes = outbox
             .Where(item => item is Create create && create.Object.Count() > 0 && create.Object.First() is Note)
             .Select(item => (Note)((Create)item).Object.First()!)
             .ToArray();
