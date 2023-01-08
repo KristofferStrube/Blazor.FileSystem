@@ -20,11 +20,10 @@
 @if (OriginPrivateDirectoryHandle is null)
 {
     <p style="color:red;">
-        The <a href="https://fs.spec.whatwg.org/">File System API</a> is only supported on few browsers, but most major vendors have committed to support it in the near future. So you might need to install alpha/beta release of your browser for this to work.
+        The <a href="https://fs.spec.whatwg.org/">File System API</a> is only supported on few browsers, but most major vendors have committed to support it in the near future. So you might need to install alpha/beta release of your browser for this to work. So this demo will run without using it in this case which is not as efficient.
         <br />
-        <small style="color:grey;">(This is the case for Chrome on mobile devices.)</small>
+        <small>(This is the case for Chrome on mobile devices.)</small>
     </p>
-    return;
 }
 <p>
     You can make full text searches in my newest posts below once they have been downloaded. You can also download the posts of another user by typing in their identifier. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
@@ -244,9 +243,14 @@
                 // Write Suffix Tree.
                 await writer.WriteAsync(MessagePack.MessagePackSerializer.Serialize(suffixTree));
                 await writer.CloseAsync();
+                suffixTrees.Add(note.Id, suffixTree);
+            }
+            else
+            {
+                // Create Suffix Tree.
+                var suffixTree = new NaiveSuffixTree(note.Content.First().ToLower());
             }
 
-            suffixTrees.Add(note.Id, suffixTree);
             Console.WriteLine("We hit something new.");
         }
 
