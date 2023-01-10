@@ -2,8 +2,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/KristofferStrube/Blazor.FileSystem)](https://github.com/KristofferStrube/Blazor.FileSystem/issues)
 [![GitHub forks](https://img.shields.io/github/forks/KristofferStrube/Blazor.FileSystem)](https://github.com/KristofferStrube/Blazor.FileSystem/network/members)
 [![GitHub stars](https://img.shields.io/github/stars/KristofferStrube/Blazor.FileSystem)](https://github.com/KristofferStrube/Blazor.FileSystem/stargazers)
-
-<!-- [![NuGet Downloads (official NuGet)](https://img.shields.io/nuget/dt/KristofferStrube.Blazor.FileSystem?label=NuGet%20Downloads)](https://www.nuget.org/packages/KristofferStrube.Blazor.FileSystem/)  -->
+[![NuGet Downloads (official NuGet)](https://img.shields.io/nuget/dt/KristofferStrube.Blazor.FileSystem?label=NuGet%20Downloads)](https://www.nuget.org/packages/KristofferStrube.Blazor.FileSystem/)
 
 # Introduction
 A Blazor wrapper for the [File System](https://fs.spec.whatwg.org/) browser API.
