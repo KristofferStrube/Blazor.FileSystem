@@ -4,8 +4,29 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Title>Blazor File System API wrapper</Title>
+    <Description>File System API wrapper implementation for Blazor.</Description>
+    <PackageId>KristofferStrube.Blazor.FileSystem</PackageId>
+    <PackageTags>Blazor;Wasm;Wrapper;FileSystemAPI;FileSystem;File;JSInterop</PackageTags>
+    <RepositoryUrl>https://github.com/KristofferStrube/Blazor.FileSystem</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageVersion>0.1.0</PackageVersion>
+    <Authors>Kristoffer Strube</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="..\..\docs\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
