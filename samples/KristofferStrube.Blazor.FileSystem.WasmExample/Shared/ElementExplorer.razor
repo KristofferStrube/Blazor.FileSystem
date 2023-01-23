@@ -1,0 +1,43 @@
+﻿@inject IJSRuntime JSRuntime
+
+@if (Element?.Kind is FileSystemHandleKind.File)
+{
+    <span><span style="width:10px;">🗒</span> @Element.Name</span>
+    <br />
+}
+else if (Element?.Kind is FileSystemHandleKind.Directory)
+{
+    <span>
+        <span style="width:10px;">📁</span> @Element.Name
+        <div style="margin-left:10px;">
+            @foreach(var child in children)
+            {
+                <span @onclick="() => Remove(child)">❌</span>
+                <ElementExplorer Element="child" />
+            }
+        </div>
+    </span>
+}
+
+@code {
+    private Element[] children = Array.Empty<Element>();
+
+    [Parameter]
+    public Element Element { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Element?.Kind is FileSystemHandleKind.Directory)
+        {
+            children = await Task.WhenAll((await FileSystemDirectoryHandle.Create(JSRuntime, Element.Handle.JSReference).ValuesAsync())
+                .Select(async handle => new Element(await handle.GetNameAsync(), await handle.GetKindAsync(), handle))
+                .ToArray());
+        }
+    }
+
+    async Task Remove(Element element)
+    {
+        FileSystemDirectoryHandle.Create(JSRuntime, Element.Handle.JSReference).RemoveEntryAsync(element.Name, new() { Recursive = true });
+        children = children.Where(c => c != element).ToArray();
+    }
+}

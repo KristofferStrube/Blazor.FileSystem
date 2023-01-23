@@ -7,7 +7,6 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// </summary>
 public class FileSystemFileHandle : FileSystemHandle
 {
-
     public static new FileSystemFileHandle Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
         return Create(jSRuntime, jSReference, FileSystemOptions.DefaultInstance);

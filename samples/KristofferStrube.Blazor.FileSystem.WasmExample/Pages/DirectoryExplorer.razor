@@ -1,0 +1,22 @@
+﻿@page "/DirectoryExplorer"
+@using static KristofferStrube.Blazor.FileSystem.WasmExample.Shared.ElementExplorer;
+
+@inject IStorageManagerService StorageManagerService
+
+<PageTitle>File System - Directory</PageTitle>
+
+<h2>Directory Explorer</h2>
+<p>
+    In this sample we go through all directories and files in the <b>Origin Private File System</b> recursively and enable you to delete files and directories.
+</p>
+
+<ElementExplorer Element="OPFS" />
+
+@code {
+    Element? OPFS;
+
+    protected override async Task OnInitializedAsync()
+    {
+        OPFS = new Element("OPFS", FileSystemHandleKind.Directory, await StorageManagerService.GetOriginPrivateDirectoryAsync());
+    }
+}

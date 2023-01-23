@@ -223,7 +223,9 @@
                 var fileName = Convert.ToHexString(hashBytes) + ".msgpack.json";
 
                 // Check if we have suffix tree for the note in
-                var fileHandle = await OriginPrivateDirectoryHandle.GetFileHandleAsync(fileName, new() { Create = true });
+                var mastodonDirectory = await OriginPrivateDirectoryHandle.GetDirectoryHandleAsync("MastodonSearchIndexes", new() { Create = true });
+                var profileDirectory = await mastodonDirectory.GetDirectoryHandleAsync(profile.Split('@')[1].ToLower(), new() { Create = true });
+                var fileHandle = await profileDirectory.GetFileHandleAsync(fileName, new() { Create = true });
                 var file = await fileHandle.GetFileAsync();
                 if (await file.GetSizeAsync() > 0)
                 {
