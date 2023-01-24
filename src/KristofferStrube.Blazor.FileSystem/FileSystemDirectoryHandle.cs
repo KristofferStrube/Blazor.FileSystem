@@ -19,7 +19,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle
 
     internal FileSystemDirectoryHandle(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options) : base(jSRuntime, jSReference, options) { }
 
-    public async Task<FileSystemHandle[]> ValuesAsync()
+    public async Task<IFileSystemHandle[]> ValuesAsync()
     {
         IJSObjectReference helper = await helperTask.Value;
         IJSObjectReference jSValues = await JSReference.InvokeAsync<IJSObjectReference>("values");
@@ -28,11 +28,16 @@ public class FileSystemDirectoryHandle : FileSystemHandle
         return await Task.WhenAll(
             Enumerable
                 .Range(0, length)
-                .Select(async i =>
-                    new FileSystemHandle(
-                        jSRuntime,
-                        await jSEntries.InvokeAsync<IJSObjectReference>("at", i),
-                        this.options)
+                .Select<int, Task<FileSystemHandle>>(async i =>
+                    {
+                        var fileSystemHandle = new FileSystemHandle(
+                            jSRuntime,
+                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i),
+                            options);
+                        return (await fileSystemHandle.GetKindAsync() is FileSystemHandleKind.File)
+                            ? FileSystemFileHandle.Create(jSRuntime, fileSystemHandle.JSReference, options)
+                            : FileSystemDirectoryHandle.Create(jSRuntime, fileSystemHandle.JSReference, options);
+                    }
                 )
                 .ToArray()
         );
@@ -55,7 +60,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle
         await JSReference.InvokeVoidAsync("removeEntry", name, options);
     }
 
-    public async Task<string[]?> ResolveAsync(FileSystemHandle possibleDescendant)
+    public async Task<string[]?> ResolveAsync(IFileSystemHandle possibleDescendant)
     {
         return await JSReference.InvokeAsync<string[]?>("resolve", possibleDescendant.JSReference);
     }

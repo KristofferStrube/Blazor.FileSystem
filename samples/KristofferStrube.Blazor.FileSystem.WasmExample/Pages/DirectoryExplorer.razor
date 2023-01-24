@@ -1,7 +1,7 @@
 ﻿@page "/DirectoryExplorer"
 @using static KristofferStrube.Blazor.FileSystem.WasmExample.Shared.ElementExplorer;
 
-@inject IStorageManagerService StorageManagerService
+@inject IStorageManagerServiceInProcess StorageManagerService
 
 <PageTitle>File System - Directory</PageTitle>
 
@@ -13,10 +13,10 @@
 <ElementExplorer Element="OPFS" />
 
 @code {
-    Element? OPFS;
+    IFileSystemHandleInProcess? OPFS;
 
     protected override async Task OnInitializedAsync()
     {
-        OPFS = new Element("OPFS", FileSystemHandleKind.Directory, await StorageManagerService.GetOriginPrivateDirectoryAsync());
+        OPFS = await StorageManagerService.GetOriginPrivateDirectoryAsync();
     }
 }

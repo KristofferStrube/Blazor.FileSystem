@@ -5,7 +5,6 @@ namespace KristofferStrube.Blazor.FileSystem;
 
 public abstract class BaseJSWrapper : IAsyncDisposable
 {
-    public readonly IJSObjectReference JSReference;
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
     protected readonly IJSRuntime jSRuntime;
     protected readonly FileSystemOptions options;
@@ -22,6 +21,8 @@ public abstract class BaseJSWrapper : IAsyncDisposable
         JSReference = jSReference;
         this.jSRuntime = jSRuntime;
     }
+
+    public IJSObjectReference JSReference { get; }
 
     public async ValueTask DisposeAsync()
     {

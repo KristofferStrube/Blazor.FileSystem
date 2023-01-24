@@ -6,7 +6,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// <summary>
 /// <see href="https://fs.spec.whatwg.org/#filesystemdirectoryhandle">FileSystemDirectoryHandle browser specs</see>
 /// </summary>
-public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle
+public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFileSystemHandleInProcess
 {
     public new IJSInProcessObjectReference JSReference;
     protected readonly IJSInProcessObjectReference inProcessHelper;
@@ -32,7 +32,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle
 
     public string Name => inProcessHelper.Invoke<string>("getAttribute", JSReference, "name");
 
-    public new async Task<FileSystemHandleInProcess[]> ValuesAsync()
+    public new async Task<IFileSystemHandleInProcess[]> ValuesAsync()
     {
         IJSObjectReference helper = await helperTask.Value;
         IJSObjectReference jSValues = await JSReference.InvokeAsync<IJSObjectReference>("values");
@@ -41,11 +41,16 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle
         return await Task.WhenAll(
             Enumerable
                 .Range(0, length)
-                .Select(async i =>
-                    await FileSystemHandleInProcess.CreateAsync(
+                .Select<int, Task<IFileSystemHandleInProcess>>(async i =>
+                {
+                    var fileSystemHandle = await FileSystemHandleInProcess.CreateAsync(
                         jSRuntime,
                         await jSEntries.InvokeAsync<IJSInProcessObjectReference>("at", i),
-                        this.options)
+                        options);
+                    return (fileSystemHandle.Kind is FileSystemHandleKind.File)
+                        ? await FileSystemFileHandleInProcess.CreateAsync(jSRuntime, fileSystemHandle.JSReference, options)
+                        : await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, fileSystemHandle.JSReference, options);
+                }
                 )
                 .ToArray()
         );

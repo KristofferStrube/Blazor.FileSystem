@@ -6,7 +6,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// <summary>
 /// <see href="https://fs.spec.whatwg.org/#filesystemhandle">FileSystemHandle browser specs</see>
 /// </summary>
-public class FileSystemHandleInProcess : FileSystemHandle
+public class FileSystemHandleInProcess : FileSystemHandle, IFileSystemHandleInProcess
 {
     public new IJSInProcessObjectReference JSReference;
     protected readonly IJSInProcessObjectReference inProcessHelper;
