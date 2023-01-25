@@ -2,42 +2,44 @@
 
 @if (Element?.Kind is FileSystemHandleKind.File)
 {
-    <span><span style="width:10px;">🗒</span> @Element.Name</span>
+    <span style="width:16px;">🗒</span> @Element.Name
     <br />
 }
 else if (Element?.Kind is FileSystemHandleKind.Directory)
 {
-    <span>
-        <span style="width:10px;">📁</span> @Element.Name
-        <div style="margin-left:10px;">
-            @foreach(var child in children)
-            {
+    if (@Element.Name is not "")
+    {
+        <span style="width:16px;">📁</span> @Element.Name
+    }
+    <div style="margin-left:16px;">
+        @foreach (var child in children)
+        {
+            <nobr>
                 <span @onclick="() => Remove(child)">❌</span>
-                <ElementExplorer Element="child" />
-            }
-        </div>
-    </span>
+                <ElementExplorer @key="child.Name" Element="child" />
+            </nobr>
+        }
+    </div>
 }
 
 @code {
-    private Element[] children = Array.Empty<Element>();
+    private List<IFileSystemHandleInProcess> children = new();
 
-    [Parameter]
-    public Element Element { get; set; }
+    [Parameter, EditorRequired]
+    public IFileSystemHandleInProcess Element { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Element?.Kind is FileSystemHandleKind.Directory)
-        {
-            children = await Task.WhenAll((await FileSystemDirectoryHandle.Create(JSRuntime, Element.Handle.JSReference).ValuesAsync())
-                .Select(async handle => new Element(await handle.GetNameAsync(), await handle.GetKindAsync(), handle))
-                .ToArray());
-        }
+        if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
+
+        children = (await directoryHandle.ValuesAsync()).ToList();
     }
 
-    async Task Remove(Element element)
+    async Task Remove(IFileSystemHandleInProcess element)
     {
-        FileSystemDirectoryHandle.Create(JSRuntime, Element.Handle.JSReference).RemoveEntryAsync(element.Name, new() { Recursive = true });
-        children = children.Where(c => c != element).ToArray();
+        if (Element is not FileSystemDirectoryHandleInProcess directoryHandle || (await directoryHandle.ResolveAsync(element)).Length is 0) return;
+
+        await directoryHandle.RemoveEntryAsync(element.Name, new() { Recursive = true });
+        children.Remove(element);
     }
 }

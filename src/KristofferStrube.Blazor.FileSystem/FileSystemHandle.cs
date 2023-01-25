@@ -5,7 +5,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// <summary>
 /// <see href="https://fs.spec.whatwg.org/#filesystemhandle">FileSystemHandle browser specs</see>
 /// </summary>
-public class FileSystemHandle : BaseJSWrapper
+public class FileSystemHandle : BaseJSWrapper, IFileSystemHandle
 {
     public static FileSystemHandle Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
@@ -31,7 +31,7 @@ public class FileSystemHandle : BaseJSWrapper
         return await helper.InvokeAsync<string>("getAttribute", JSReference, "name");
     }
 
-    public async Task<bool> IsSameEntryAsync(FileSystemHandle other)
+    public async Task<bool> IsSameEntryAsync(IFileSystemHandle other)
     {
         return await JSReference.InvokeAsync<bool>("isSameEntry", other.JSReference);
     }
