@@ -12,9 +12,9 @@ public class NodePresenterBenchmark
 {
     private BenchmarkRenderer renderer = default!;
 
-    private Note videoNote;
-    private Note imageNote;
-    private Note onlyContentNote;
+    private Note videoNote = null!;
+    private Note imageNote = null!;
+    private Note onlyContentNote = null!;
 
     [GlobalSetup]
     public void GlobalSetup()

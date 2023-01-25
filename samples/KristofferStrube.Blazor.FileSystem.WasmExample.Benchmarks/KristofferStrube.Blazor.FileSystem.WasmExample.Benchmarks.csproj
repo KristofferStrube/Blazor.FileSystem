@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.3" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.4" />
 
-    <PackageReference Include="KristofferStrube.ActivityStreams" Version="0.1.0-alpha.6" />
+    <PackageReference Include="KristofferStrube.ActivityStreams" Version="0.1.0" />
   </ItemGroup>
   
   <ItemGroup>
