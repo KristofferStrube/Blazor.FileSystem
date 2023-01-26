@@ -1,27 +1,23 @@
-﻿<!-- ElementExplorer.razor -->
-
-    @if (Element is FileSystemFileHandle fileHandle)
+﻿@if (Element is FileSystemFileHandle fileHandle)
+{
+    <button @onclick="() => EditAction(fileHandle)" class="btn btn-primary btn-sm" title="Edit">✏</button>
+    <span style="width:16px;">🗒</span> @Element.Name
+    <br />
+}
+else if (Element is FileSystemDirectoryHandle)
+{
+    <button @onclick="AddFile" class="btn btn-success btn-sm" title="Add New File">➕🗒</button>
+    <button @onclick="AddDirectory" class="btn btn-success btn-sm" title="Add New Directory">➕📁</button>
+    if (@Element.Name is not "")
     {
-        <button @onclick="() => { EditAction?.Invoke(fileHandle); }" class="btn btn-primary btn-sm" title="Edit">✏</button>
-        <span style="width:16px;">🗒</span> @Element.Name
-        <br />
+        <span style="width:16px;">📁</span> @Element.Name
     }
-    else if (Element is FileSystemDirectoryHandle)
+    @foreach (var child in children)
     {
-        <button @onclick="AddFile" class="btn btn-success btn-sm" title="Add New File">➕🗒</button>
-        <button @onclick="AddDirectory" class="btn btn-success btn-sm" title="Add New Directory">➕📁</button>
-        if (@Element.Name is not "")
-        {
-            <span style="width:16px;">📁</span> @Element.Name
-        }
-        @foreach (var child in children)
-        {
-            if (child.Name is "MastodonSearchIndexes" || child.Name.EndsWith(".crswap")) continue;
-            <div style="margin-left:30px; margin-top:5px; white-space:nowrap;">
-                <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
-                <ElementExplorer @key=child.Name Element=child EditAction=EditAction />
-            </div>
-        }
+        if (child.Name is "MastodonSearchIndexes" || child.Name.EndsWith(".crswap")) continue;
+        <div style="margin-left:30px; margin-top:5px; white-space:nowrap;">
+            <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
+            <ElementExplorer @key=child.Name Element=child EditAction=EditAction />
+        </div>
     }
-
-
+}
