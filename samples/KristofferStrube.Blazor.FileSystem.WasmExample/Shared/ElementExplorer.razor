@@ -10,8 +10,8 @@
 }
 else if (Element?.Kind is FileSystemHandleKind.Directory)
 {
-    <button @onclick="AddFile" class="btn btn-success btn-sm" style="margin-bottom:5px;" title="Add New File">➕🗒</button>
-    <button @onclick="AddDirectory" class="btn btn-success btn-sm" style="margin-bottom:5px;" title="Add New Directory">➕📁</button>
+    <button @onclick="AddFile" class="btn btn-success btn-sm" title="Add New File">➕🗒</button>
+    <button @onclick="AddDirectory" class="btn btn-success btn-sm" title="Add New Directory">➕📁</button>
     if (@Element.Name is not "")
     {
         <span>
@@ -22,10 +22,12 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
         @foreach (var child in children)
         {
             if (child.Name is "MastodonSearchIndexes") continue;
-            <nobr>
-                <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" style="margin-bottom:5px;" title="Delete">❌</button>
-                <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
-            </nobr>
+            <div style="margin-top:5px;">
+                <nobr>
+                    <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
+                    <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
+                </nobr>
+            </div>
         }
     </div>
 }
