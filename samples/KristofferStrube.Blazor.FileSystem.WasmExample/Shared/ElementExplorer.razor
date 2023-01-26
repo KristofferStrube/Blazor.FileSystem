@@ -1,14 +1,12 @@
-﻿@inject IJSRuntime JSRuntime
-
-@if (Element is FileSystemFileHandle fileHandle)
+﻿@if (Element is FileSystemFileHandle fileHandle)
 {
     <span>
-        <button @onclick="() => { EditAction.Invoke(fileHandle); }" class="btn btn-primary btn-sm" title="Edit">✏</button>
+        <button @onclick="() => { EditAction?.Invoke(fileHandle); }" class="btn btn-primary btn-sm" title="Edit">✏</button>
         <span style="width:16px;">🗒</span> @Element.Name
     </span>
     <br />
 }
-else if (Element?.Kind is FileSystemHandleKind.Directory)
+else if (Element is FileSystemDirectoryHandle)
 {
     <button @onclick="AddFile" class="btn btn-success btn-sm" title="Add New File">➕🗒</button>
     <button @onclick="AddDirectory" class="btn btn-success btn-sm" title="Add New Directory">➕📁</button>
@@ -21,11 +19,11 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
     <div style="margin-left:30px;">
         @foreach (var child in children)
         {
-            if (child.Name is "MastodonSearchIndexes") continue;
+            if (child.Name is "MastodonSearchIndexes" || child.Name.EndsWith(".crswap")) continue;
             <div style="margin-top:5px;">
                 <nobr>
                     <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
-                    <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
+                    <ElementExplorer @key=child.Name Element=child EditAction=EditAction />
                 </nobr>
             </div>
         }
@@ -36,22 +34,20 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
     private List<IFileSystemHandleInProcess> children = new();
 
     [Parameter, EditorRequired]
-    public IFileSystemHandleInProcess? Element { get; set; }
+    public IFileSystemHandleInProcess Element { get; set; } = default!;
 
     [Parameter, EditorRequired]
-    public Func<FileSystemFileHandle, Task> EditAction { get; set; }
+    public Func<FileSystemFileHandle, Task> EditAction { get; set; } = default!;
 
     protected override async Task OnParametersSetAsync()
     {
         if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
-
         children = (await directoryHandle.ValuesAsync()).ToList();
     }
 
     async Task Remove(IFileSystemHandleInProcess element)
     {
         if (Element is not FileSystemDirectoryHandleInProcess { } directoryHandle || (await directoryHandle.ResolveAsync(element))!.Length is 0) return;
-
         await directoryHandle.RemoveEntryAsync(element.Name, new() { Recursive = true });
         children.Remove(element);
     }
@@ -59,16 +55,12 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
     async Task AddFile()
     {
         if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
-
-        await directoryHandle.GetFileHandleAsync($"{Guid.NewGuid().ToString()[..4]}.txt", new() { Create = true });
-        await OnParametersSetAsync();
+        children.Add(await directoryHandle.GetFileHandleAsync($"{Guid.NewGuid().ToString()[..4]}.txt", new() { Create = true }));
     }
 
     async Task AddDirectory()
     {
         if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
-
-        await directoryHandle.GetDirectoryHandleAsync(Guid.NewGuid().ToString()[..4], new() { Create = true });
-        await OnParametersSetAsync();
+        children.Add(await directoryHandle.GetDirectoryHandleAsync(Guid.NewGuid().ToString()[..4], new() { Create = true }));
     }
 }
