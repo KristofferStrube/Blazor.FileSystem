@@ -22,12 +22,10 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
         @foreach (var child in children)
         {
             if (child.Name is "MastodonSearchIndexes") continue;
-            <div style="margin-bottom:5px;">
-                <nobr>
-                    <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
-                    <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
-                </nobr>
-            </div>
+            <nobr>
+                <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" style="margin-bottom:5px;" title="Delete">❌</button>
+                <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
+            </nobr>
         }
     </div>
 }
