@@ -10,13 +10,44 @@
     In this sample we go through all directories and files in the <b>Origin Private File System</b> recursively and enable you to delete files and directories.
 </p>
 
-<ElementExplorer Element="OPFS" />
+<div style="display:flex;flex-direction:row;height:60vh;">
+    <div style="display:flex;flex:1;overflow:scroll">
+        <div>
+            <ElementExplorer Element="OPFS" EditAction="Edit" />
+        </div>
+    </div>
+    <div style="display:flex;flex:1;">
+        @if (editFileHandle is not null)
+        {
+            <textarea style="width:100%;height:100%;" value=@text @oninput=TextAreaChanged></textarea>
+        }
+    </div>
+</div>
 
 @code {
+    string? text = null;
+    FileSystemFileHandle? editFileHandle;
     IFileSystemHandleInProcess? OPFS;
 
     protected override async Task OnInitializedAsync()
     {
         OPFS = await StorageManagerService.GetOriginPrivateDirectoryAsync();
+    }
+
+    async Task TextAreaChanged(ChangeEventArgs eventArgs)
+    {
+        if (editFileHandle is not null && eventArgs.Value is string value)
+        {
+            await using var writable = await editFileHandle.CreateWritableAsync();
+            await writable.WriteAsync(value);
+        }
+    }
+
+    async Task Edit(FileSystemFileHandle fileHandle)
+    {
+        this.editFileHandle = fileHandle;
+        var file = await fileHandle.GetFileAsync();
+        text = await file.TextAsync();
+        StateHasChanged();
     }
 }

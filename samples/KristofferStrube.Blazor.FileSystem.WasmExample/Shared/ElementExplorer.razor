@@ -1,23 +1,33 @@
 ﻿@inject IJSRuntime JSRuntime
 
-@if (Element?.Kind is FileSystemHandleKind.File)
+@if (Element is FileSystemFileHandle fileHandle)
 {
-    <span style="width:16px;">🗒</span> @Element.Name
+    <span>
+        <button @onclick="() => { EditAction.Invoke(fileHandle); }" class="btn btn-primary btn-sm" title="Edit">✏</button>
+        <span style="width:16px;">🗒</span> @Element.Name
+    </span>
     <br />
 }
 else if (Element?.Kind is FileSystemHandleKind.Directory)
 {
+    <button @onclick="AddFile" class="btn btn-success btn-sm" style="margin-bottom:5px;" title="Add New File">➕🗒</button>
+    <button @onclick="AddDirectory" class="btn btn-success btn-sm" style="margin-bottom:5px;" title="Add New Directory">➕📁</button>
     if (@Element.Name is not "")
     {
-        <span style="width:16px;">📁</span> @Element.Name
+        <span>
+            <span style="width:16px;">📁</span> @Element.Name
+        </span>
     }
-    <div style="margin-left:16px;">
+    <div style="margin-left:30px;">
         @foreach (var child in children)
         {
-            <nobr>
-                <span @onclick="() => Remove(child)">❌</span>
-                <ElementExplorer @key="child.Name" Element="child" />
-            </nobr>
+            if (child.Name is "MastodonSearchIndexes") continue;
+            <div style="margin-bottom:5px;">
+                <nobr>
+                    <button @onclick="() => Remove(child)" class="btn btn-danger btn-sm" title="Delete">❌</button>
+                    <ElementExplorer @key="child.Name" Element="child" EditAction="EditAction" />
+                </nobr>
+            </div>
         }
     </div>
 }
@@ -26,7 +36,10 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
     private List<IFileSystemHandleInProcess> children = new();
 
     [Parameter, EditorRequired]
-    public IFileSystemHandleInProcess Element { get; set; }
+    public IFileSystemHandleInProcess? Element { get; set; }
+
+    [Parameter, EditorRequired]
+    public Func<FileSystemFileHandle, Task> EditAction { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -37,9 +50,25 @@ else if (Element?.Kind is FileSystemHandleKind.Directory)
 
     async Task Remove(IFileSystemHandleInProcess element)
     {
-        if (Element is not FileSystemDirectoryHandleInProcess directoryHandle || (await directoryHandle.ResolveAsync(element)).Length is 0) return;
+        if (Element is not FileSystemDirectoryHandleInProcess { } directoryHandle || (await directoryHandle.ResolveAsync(element))!.Length is 0) return;
 
         await directoryHandle.RemoveEntryAsync(element.Name, new() { Recursive = true });
         children.Remove(element);
+    }
+
+    async Task AddFile()
+    {
+        if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
+
+        await directoryHandle.GetFileHandleAsync($"{Guid.NewGuid().ToString()[..4]}.txt", new() { Create = true });
+        await OnParametersSetAsync();
+    }
+
+    async Task AddDirectory()
+    {
+        if (Element is not FileSystemDirectoryHandleInProcess directoryHandle) return;
+
+        await directoryHandle.GetDirectoryHandleAsync(Guid.NewGuid().ToString()[..4], new() { Create = true });
+        await OnParametersSetAsync();
     }
 }
