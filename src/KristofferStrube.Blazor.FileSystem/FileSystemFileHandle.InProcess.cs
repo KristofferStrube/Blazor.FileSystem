@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// <see href=https://fs.spec.whatwg.org/#filesystemfilehandle">FileSystemFileHandle browser specs</see>
+/// <see href="https://fs.spec.whatwg.org/#filesystemfilehandle">FileSystemFileHandle browser specs</see>
 /// </summary>
 public class FileSystemFileHandleInProcess : FileSystemFileHandle, IFileSystemHandleInProcess
 {
