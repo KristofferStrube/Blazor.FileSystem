@@ -24,7 +24,7 @@
     </p>
 }
 <p>
-    You can make full text searches in Novas (the creator of Hachyderm) newest posts below once they have been downloaded. You can also download the posts of another user by typing in their identifier. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
+    You can make full text searches in <a href="https://kristoffer-strube.dk">my blog posts</a> which I also expose through my private ActivityStreams bot (<a href="https://github.com/KristofferStrube/ActivityPubBotDotNet">AcitivityPubBotDotNet</a>) once they have been downloaded. You can also download the posts of another user by typing in their identifier. It downloads these posts and check in the file system if we have already created a suffix search tree for the post and uses that instead of creating a new one if available. The suffix tree can do a fuzzy search efficiently which allows small errors in the written search query.
 </p>
 
 <div class="input-group mb-3">
@@ -85,11 +85,11 @@
 }
 
 @code {
-    string profile = "@nova@hachyderm.io";
+    string profile = "@bot@kristoffer-strube.dk";
     string search = "";
     string? profileFeedback;
     FileSystemDirectoryHandle? OriginPrivateDirectoryHandle;
-    Note[] notes = Array.Empty<Note>();
+    IObject[] notes = Array.Empty<IObject>();
     List<(string Resource, SamLine[] Matches)> results = new();
     Dictionary<string, NaiveSuffixTree> suffixTrees = new();
     CancellationTokenSource downloadCancellationSource = new CancellationTokenSource();
@@ -138,7 +138,7 @@
         var searchCancellationToken = searchCancellationSource.Token;
 
         results = new();
-        notes = Array.Empty<Note>();
+        notes = Array.Empty<IObject>();
         suffixTrees = new();
         downloading = false;
         search = "";
@@ -191,15 +191,15 @@
         }
 
         notes = outboxObjects
-            .Where(item => item is Create create && create.Object.Count() > 0 && create.Object.First() is Note)
-            .Select(item => (Note)((Create)item).Object.First()!)
+            .Where(item => item is Create create && create.Object.Count() > 0 && create.Object.First() is IObject)
+            .Select(item => (IObject)((Create)item).Object.First()!)
             .ToArray();
 
         profileFeedback = null;
 
         StateHasChanged();
 
-        foreach (Note note in notes)
+        foreach (IObject note in notes)
         {
             StateHasChanged();
             await Task.Delay(1);
