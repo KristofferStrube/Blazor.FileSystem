@@ -68,7 +68,7 @@ Then you can use `IStorageManagerService` to get a directory handle for the **or
 }
 ```
 
-The counterpart to getting a `File` via the `GetFileAsync()` method is getting a `FileSystemWritableFileStream` via the `CreateWritableAsync()` which can be used to write to the file referenced with the `FileSystemFileHandle` like this:
+The counterpart to getting a `File` via the `GetFileAsync()` method is getting a `FileSystemWritableFileStream` via the `CreateWritableAsync()` method which can be used to write to the file referenced with the `FileSystemFileHandle` like this:
 ```csharp
 FileSystemFileHandle fileHandle; // Some file handle
 FileSystemWritableFileStream writable = await fileHandle.CreateWritableAsync();
