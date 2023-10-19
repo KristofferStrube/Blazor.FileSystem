@@ -1,4 +1,5 @@
 ﻿using KristofferStrube.Blazor.FileAPI;
+using KristofferStrube.Blazor.FileSystem.Converters;
 using System.Text.Json.Serialization;
 
 namespace KristofferStrube.Blazor.FileSystem;
@@ -10,7 +11,8 @@ public class BlobWriteParams : BaseWriteParams
         Type = type;
     }
 
-    [JsonIgnore]
+    [JsonPropertyName("data")]
+    [JsonConverter(typeof(BlobConverter))]
     public Blob? Data { get; set; }
 }
 
