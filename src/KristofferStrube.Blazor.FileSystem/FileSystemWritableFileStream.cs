@@ -52,7 +52,7 @@ public class FileSystemWritableFileStream : WritableStream
 
     public async Task WriteAsync(Blob data)
     {
-        await JSReference.InvokeVoidAsync("write", data);
+        await JSReference.InvokeVoidAsync("write", data.JSReference);
     }
 
     public async Task WriteAsync(BlobWriteParams data)
