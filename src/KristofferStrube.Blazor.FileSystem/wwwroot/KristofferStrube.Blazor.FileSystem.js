@@ -10,11 +10,6 @@ export async function arrayFrom(values) {
     return res;
 }
 
-export function WriteBlobWriteParams(fileSystemWritableFileStream, writeParams, blob) {
-    writeParams.data = blob;
-    fileSystemWritableFileStream.write(writeParams);
-}
-
 export async function arrayBuffer(blob) {
     var buffer = await blob.arrayBuffer();
     var bytes = new Uint8Array(buffer);
