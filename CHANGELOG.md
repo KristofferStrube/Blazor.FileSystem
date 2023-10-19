@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2023-10-19
+### Fixed
+- Fixed that writing `WriteParams` with a `Blob` used the wrong JS helper reference.
+
 ## [0.3.0] - 2023-03-16
 ### Changed
 - Changed .NET version to `7.0`.
