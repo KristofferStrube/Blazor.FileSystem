@@ -30,7 +30,7 @@ public class FileSystemWritableFileStream : WritableStream
         return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference));
     }
 
-    protected FileSystemWritableFileStream(IJSRuntime jSRuntime, IJSObjectReference jSReference) : base(jSRuntime, jSReference)
+    protected FileSystemWritableFileStream(IJSRuntime jSRuntime, IJSObjectReference jSReference) : base(jSRuntime, jSReference, new())
     {
         fileSystemHelperTask = new(() => jSRuntime.GetHelperAsync(FileSystemOptions.DefaultInstance));
     }
