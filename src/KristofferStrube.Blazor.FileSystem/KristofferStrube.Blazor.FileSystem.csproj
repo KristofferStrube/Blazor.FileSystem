@@ -34,8 +34,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="KristofferStrube.Blazor.FileAPI" Version="0.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Blazor.FileAPI\src\KristofferStrube.Blazor.FileAPI\KristofferStrube.Blazor.FileAPI.csproj" />
   </ItemGroup>
 
 </Project>

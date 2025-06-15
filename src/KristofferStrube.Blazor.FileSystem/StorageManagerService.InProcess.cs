@@ -1,27 +1,28 @@
 using Microsoft.JSInterop;
 
-namespace KristofferStrube.Blazor.FileSystem;
-
-public class StorageManagerServiceInProcess : StorageManagerService, IStorageManagerServiceInProcess
+namespace KristofferStrube.Blazor.FileSystem
 {
-    public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
-
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
-    public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
+    public class StorageManagerServiceInProcess : StorageManagerService, IStorageManagerServiceInProcess
     {
-        return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
-    }
+        public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
 
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
-    public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
-    {
-        IJSInProcessObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("navigator.storage.getDirectory");
-        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options);
+        /// <summary>
+        /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+        /// </summary>
+        /// <returns></returns>
+        public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
+        {
+            return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
+        }
+
+        /// <summary>
+        /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
+        /// </summary>
+        /// <returns></returns>
+        public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
+        {
+            IJSInProcessObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("navigator.storage.getDirectory");
+            return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options);
+        }
     }
 }

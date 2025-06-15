@@ -1,6 +1,7 @@
-﻿namespace KristofferStrube.Blazor.FileSystem;
-
-public interface IStorageManagerServiceInProcess : IStorageManagerService
+﻿namespace KristofferStrube.Blazor.FileSystem
 {
-    new Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync();
+    public interface IStorageManagerServiceInProcess : IStorageManagerService
+    {
+        new Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync();
+    }
 }

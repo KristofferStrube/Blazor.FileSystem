@@ -1,7 +1,8 @@
-﻿namespace KristofferStrube.Blazor.FileSystem;
-
-public interface IFileSystemHandleInProcess : IFileSystemHandle
+﻿namespace KristofferStrube.Blazor.FileSystem
 {
-    FileSystemHandleKind Kind { get; }
-    string Name { get; }
+    public interface IFileSystemHandleInProcess : IFileSystemHandle
+    {
+        FileSystemHandleKind Kind { get; }
+        string Name { get; }
+    }
 }

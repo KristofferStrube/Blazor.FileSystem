@@ -2,52 +2,53 @@
 using KristofferStrube.Blazor.FileSystem.Converters;
 using System.Text.Json.Serialization;
 
-namespace KristofferStrube.Blazor.FileSystem;
-
-public class BlobWriteParams : BaseWriteParams
+namespace KristofferStrube.Blazor.FileSystem
 {
-    public BlobWriteParams(WriteCommandType type)
+    public class BlobWriteParams : BaseWriteParams
     {
-        Type = type;
+        public BlobWriteParams(WriteCommandType type)
+        {
+            Type = type;
+        }
+
+        [JsonPropertyName("data")]
+        [JsonConverter(typeof(BlobConverter))]
+        public Blob? Data { get; set; }
     }
 
-    [JsonPropertyName("data")]
-    [JsonConverter(typeof(BlobConverter))]
-    public Blob? Data { get; set; }
-}
-
-public class StringWriteParams : BaseWriteParams
-{
-    public StringWriteParams(WriteCommandType type)
+    public class StringWriteParams : BaseWriteParams
     {
-        Type = type;
+        public StringWriteParams(WriteCommandType type)
+        {
+            Type = type;
+        }
+
+        [JsonPropertyName("data")]
+        public string? Data { get; set; }
     }
 
-    [JsonPropertyName("data")]
-    public string? Data { get; set; }
-}
-
-public class ByteArrayWriteParams : BaseWriteParams
-{
-    public ByteArrayWriteParams(WriteCommandType type)
+    public class ByteArrayWriteParams : BaseWriteParams
     {
-        Type = type;
+        public ByteArrayWriteParams(WriteCommandType type)
+        {
+            Type = type;
+        }
+
+        [JsonPropertyName("data")]
+        public byte[]? Data { get; set; }
     }
 
-    [JsonPropertyName("data")]
-    public byte[]? Data { get; set; }
-}
+    public abstract class BaseWriteParams
+    {
+        [JsonPropertyName("type")]
+        public WriteCommandType Type { get; init; }
 
-public abstract class BaseWriteParams
-{
-    [JsonPropertyName("type")]
-    public WriteCommandType Type { get; init; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonPropertyName("size")]
+        public ulong Size { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("size")]
-    public ulong Size { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("position")]
-    public ulong Position { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonPropertyName("position")]
+        public ulong Position { get; set; }
+    }
 }
