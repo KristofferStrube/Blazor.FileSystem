@@ -1,37 +1,59 @@
-﻿using KristofferStrube.Blazor.FileSystem.Extensions;
+﻿using KristofferStrube.Blazor.DOM.Extensions;
+using KristofferStrube.Blazor.FileSystem.Extensions;
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// <see href="https://fs.spec.whatwg.org/#filesystemdirectoryhandle">FileSystemDirectoryHandle browser specs</see>
+/// An in-process version of a <see cref="FileSystemHandle"/> that represents a directory.
 /// </summary>
-public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFileSystemHandleInProcess
+/// <remarks><see href="https://fs.spec.whatwg.org/#api-filesystemdirectoryhandle">See the API definition here</see>.</remarks>
+[IJSWrapperConverter]
+public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFileSystemHandleInProcess, IJSInProcessCreatable<FileSystemDirectoryHandleInProcess, FileSystemDirectoryHandle>
 {
-    public new IJSInProcessObjectReference JSReference;
+    /// <inheritdoc cref="IJSInProcessCreatable{TInProcess, T}.JSReference"/>
+    public new IJSInProcessObjectReference JSReference { get; set; }
+
+    /// <summary>
+    /// A lazily evaluated task that gives access to helper methods.
+    /// </summary>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
+    /// <inheritdoc/>
     public static async Task<FileSystemDirectoryHandleInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference, FileSystemOptions.DefaultInstance);
+        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
     }
 
+    /// <inheritdoc/>
+    public static async Task<FileSystemDirectoryHandleInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, CreationOptions options)
+    {
+        IJSInProcessObjectReference inProcessHelper = await jSRuntime.GetInProcessHelperAsync(FileSystemOptions.DefaultInstance);
+        return new FileSystemDirectoryHandleInProcess(jSRuntime, inProcessHelper, jSReference, FileSystemOptions.DefaultInstance, options);
+    }
+
+    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference, CreationOptions)" />
     public static async Task<FileSystemDirectoryHandleInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, FileSystemOptions options)
     {
         IJSInProcessObjectReference inProcessHelper = await jSRuntime.GetInProcessHelperAsync(options);
-        return new FileSystemDirectoryHandleInProcess(jSRuntime, inProcessHelper, jSReference, options);
+        return new FileSystemDirectoryHandleInProcess(jSRuntime, inProcessHelper, jSReference, options, new() { DisposesJSReference = true });
     }
 
-    internal FileSystemDirectoryHandleInProcess(IJSRuntime jSRuntime, IJSInProcessObjectReference inProcessHelper, IJSInProcessObjectReference jSReference, FileSystemOptions options) : base(jSRuntime, jSReference, options)
+    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference, CreationOptions)" />
+    protected FileSystemDirectoryHandleInProcess(IJSRuntime jSRuntime, IJSInProcessObjectReference inProcessHelper, IJSInProcessObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options) : base(jSRuntime, jSReference, fileSystemOptions, options)
     {
         this.inProcessHelper = inProcessHelper;
         JSReference = jSReference;
     }
 
+    /// <inheritdoc cref="IFileSystemHandle.GetKindAsync"/>
     public FileSystemHandleKind Kind => inProcessHelper.Invoke<FileSystemHandleKind>("getAttribute", JSReference, "kind");
 
+    /// <inheritdoc cref="IFileSystemHandle.GetNameAsync"/>
     public string Name => inProcessHelper.Invoke<string>("getAttribute", JSReference, "name");
 
+    /// <inheritdoc/>
     public new async Task<IFileSystemHandleInProcess[]> ValuesAsync()
     {
         IJSObjectReference helper = await helperTask.Value;
@@ -43,28 +65,30 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
                 .Range(0, length)
                 .Select<int, Task<IFileSystemHandleInProcess>>(async i =>
                 {
-                    var fileSystemHandle = await FileSystemHandleInProcess.CreateAsync(
-                        jSRuntime,
+                    FileSystemHandleInProcess fileSystemHandle = await FileSystemHandleInProcess.CreateAsync(
+                        JSRuntime,
                         await jSEntries.InvokeAsync<IJSInProcessObjectReference>("at", i),
-                        options);
+                        FileSystemOptions);
                     return (fileSystemHandle.Kind is FileSystemHandleKind.File)
-                        ? await FileSystemFileHandleInProcess.CreateAsync(jSRuntime, fileSystemHandle.JSReference, options)
-                        : await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, fileSystemHandle.JSReference, options);
+                        ? await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, fileSystemHandle.JSReference, FileSystemOptions)
+                        : await FileSystemDirectoryHandleInProcess.CreateAsync(JSRuntime, fileSystemHandle.JSReference, FileSystemOptions);
                 }
                 )
                 .ToArray()
         );
     }
 
+    /// <inheritdoc cref="FileSystemDirectoryHandle.GetFileHandleAsync(string, FileSystemGetFileOptions?)"/>
     public new async Task<FileSystemFileHandleInProcess> GetFileHandleAsync(string name, FileSystemGetFileOptions? options = null)
     {
         IJSInProcessObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getFileHandle", name, options);
-        return new FileSystemFileHandleInProcess(jSRuntime, inProcessHelper, jSFileSystemFileHandle, this.options);
+        return await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, jSFileSystemFileHandle, FileSystemOptions);
     }
 
+    /// <inheritdoc cref="FileSystemDirectoryHandle.GetDirectoryHandleAsync(string, FileSystemGetDirectoryOptions?)"/>
     public new async Task<FileSystemDirectoryHandleInProcess> GetDirectoryHandleAsync(string name, FileSystemGetDirectoryOptions? options = null)
     {
-        IJSInProcessObjectReference jSFileSystemDirectoryHandle = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getDirectoryHandle", name, options);
-        return new FileSystemDirectoryHandleInProcess(jSRuntime, inProcessHelper, jSFileSystemDirectoryHandle, this.options);
+        IJSInProcessObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getDirectoryHandle", name, options);
+        return await CreateAsync(JSRuntime, jSFileSystemFileHandle, FileSystemOptions);
     }
 }

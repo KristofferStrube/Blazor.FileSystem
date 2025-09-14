@@ -2,8 +2,13 @@ using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
+/// <inheritdoc cref="IStorageManagerService"/>
 public class StorageManagerServiceInProcess : StorageManagerService, IStorageManagerServiceInProcess
 {
+    /// <summary>
+    /// Creates a <see cref="StorageManagerServiceInProcess"/>
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
     public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
 
     /// <summary>

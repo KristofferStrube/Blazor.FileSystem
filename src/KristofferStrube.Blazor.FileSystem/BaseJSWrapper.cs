@@ -1,29 +1,48 @@
 ﻿using KristofferStrube.Blazor.FileSystem.Extensions;
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
-public abstract class BaseJSWrapper : IAsyncDisposable
+/// <summary>
+/// Base class for wrapping objects in the Blazor.WebAudio library.
+/// </summary>
+[IJSWrapperConverter]
+public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
 {
+    /// <summary>
+    /// A lazily evaluated task that gives access to helper methods.
+    /// </summary>
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
-    protected readonly IJSRuntime jSRuntime;
-    protected readonly FileSystemOptions options;
 
     /// <summary>
-    /// Constructs a wrapper instance for an equivalent JS instance.
+    /// Options for where it will find the script file that it needs to make complex JSInterop.
     /// </summary>
-    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
-    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
-    internal BaseJSWrapper(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
-    {
-        this.options = options;
-        helperTask = new(async () => await jSRuntime.GetHelperAsync(options));
-        JSReference = jSReference;
-        this.jSRuntime = jSRuntime;
-    }
+    public FileSystemOptions FileSystemOptions { get; set; }
 
+    /// <inheritdoc/>
+    public IJSRuntime JSRuntime { get; }
+
+    /// <inheritdoc/>
     public IJSObjectReference JSReference { get; }
 
+    /// <inheritdoc/>
+    public bool DisposesJSReference { get; }
+
+    /// <inheritdoc cref="IJSCreatable{T}.CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
+    protected BaseJSWrapper(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options)
+    {
+        FileSystemOptions = fileSystemOptions;
+        helperTask = new(async () => await jSRuntime.GetHelperAsync(fileSystemOptions));
+        JSReference = jSReference;
+        JSRuntime = jSRuntime;
+        DisposesJSReference = options.DisposesJSReference;
+    }
+
+    /// <summary>
+    /// Disposes the underlying js object reference.
+    /// </summary>
+    /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
         if (helperTask.IsValueCreated)

@@ -1,4 +1,6 @@
-﻿using KristofferStrube.Blazor.FileSystem.Extensions;
+﻿using KristofferStrube.Blazor.DOM.Extensions;
+using KristofferStrube.Blazor.FileSystem.Extensions;
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
@@ -6,23 +8,38 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// <summary>
 /// <see href="https://fs.spec.whatwg.org/#filesystemwritablefilestream">FileSystemWritableFileStream browser specs</see>
 /// </summary>
-public class FileSystemWritableFileStreamInProcess : FileSystemWritableFileStream
+public class FileSystemWritableFileStreamInProcess : FileSystemWritableFileStream, IJSInProcessCreatable<FileSystemWritableFileStreamInProcess, FileSystemWritableFileStream>
 {
-    public new IJSInProcessObjectReference JSReference;
+    /// <inheritdoc/>
+    public new IJSInProcessObjectReference JSReference { get; }
+
+    /// <summary>
+    /// A lazily evaluated task that gives access to helper methods.
+    /// </summary>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
+    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference)"/>
+    public static async Task<FileSystemWritableFileStreamInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, FileSystemOptions options)
+    {
+        IJSInProcessObjectReference inProcessHelper = await jSRuntime.GetInProcessHelperAsync(options);
+        return new FileSystemWritableFileStreamInProcess(jSRuntime, inProcessHelper, jSReference, new() { DisposesJSReference = true });
+    }
+
+    /// <inheritdoc/>
     public static async Task<FileSystemWritableFileStreamInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference)
     {
         return await CreateAsync(jSRuntime, jSReference, FileSystemOptions.DefaultInstance);
     }
 
-    public static async Task<FileSystemWritableFileStreamInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, FileSystemOptions options)
+    /// <inheritdoc/>
+    public static async Task<FileSystemWritableFileStreamInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference, CreationOptions options)
     {
-        IJSInProcessObjectReference inProcessHelper = await jSRuntime.GetInProcessHelperAsync(options);
-        return new FileSystemWritableFileStreamInProcess(jSRuntime, inProcessHelper, jSReference);
+        IJSInProcessObjectReference inProcessHelper = await jSRuntime.GetInProcessHelperAsync(FileSystemOptions.DefaultInstance);
+        return new FileSystemWritableFileStreamInProcess(jSRuntime, inProcessHelper, jSReference, options);
     }
 
-    internal FileSystemWritableFileStreamInProcess(IJSRuntime jSRuntime, IJSInProcessObjectReference inProcessHelper, IJSInProcessObjectReference jSReference) : base(jSRuntime, jSReference)
+    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference, CreationOptions)"/>
+    protected internal FileSystemWritableFileStreamInProcess(IJSRuntime jSRuntime, IJSInProcessObjectReference inProcessHelper, IJSInProcessObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options)
     {
         this.inProcessHelper = inProcessHelper;
         JSReference = jSReference;
