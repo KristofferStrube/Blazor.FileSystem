@@ -58,7 +58,10 @@ public class FileSystemFileHandleInProcess : FileSystemFileHandle, IFileSystemHa
     public new async Task<FileInProcess> GetFileAsync()
     {
         IJSInProcessObjectReference jSFile = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getFile");
-        return await FileInProcess.CreateAsync(JSRuntime, jSFile);
+        return await FileInProcess.CreateAsync(JSRuntime, jSFile, new()
+        {
+            DisposesJSReference = true
+        });
     }
 
     /// <inheritdoc cref="FileSystemFileHandle.CreateWritableAsync"/>
