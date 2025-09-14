@@ -144,4 +144,16 @@ public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSys
     {
         await JSReference.InvokeVoidAsync("truncate", size);
     }
+
+    /// <inheritdoc/>
+    public new async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        if (FileSystemHelperTask.IsValueCreated)
+        {
+            IJSObjectReference module = await FileSystemHelperTask.Value;
+            await module.DisposeAsync();
+        }
+        GC.SuppressFinalize(this);
+    }
 }

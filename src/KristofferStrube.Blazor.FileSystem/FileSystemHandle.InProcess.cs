@@ -49,4 +49,12 @@ public class FileSystemHandleInProcess : FileSystemHandle, IFileSystemHandleInPr
 
     /// <inheritdoc cref="FileSystemHandle.GetNameAsync"/>
     public string Name => inProcessHelper.Invoke<string>("getAttribute", JSReference, "name");
+
+    /// <inheritdoc/>
+    public new async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        await inProcessHelper.DisposeAsync();
+        GC.SuppressFinalize(this);
+    }
 }

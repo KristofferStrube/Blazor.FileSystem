@@ -39,10 +39,7 @@ public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
         DisposesJSReference = options.DisposesJSReference;
     }
 
-    /// <summary>
-    /// Disposes the underlying js object reference.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         if (helperTask.IsValueCreated)
@@ -50,6 +47,7 @@ public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
             IJSObjectReference module = await helperTask.Value;
             await module.DisposeAsync();
         }
+        await IJSWrapper.DisposeJSReference(this);
         GC.SuppressFinalize(this);
     }
 }

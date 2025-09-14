@@ -119,4 +119,12 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
         instance.FileSystemOptions = FileSystemOptions;
         return instance;
     }
+
+    /// <inheritdoc/>
+    public new async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        await inProcessHelper.DisposeAsync();
+        GC.SuppressFinalize(this);
+    }
 }
