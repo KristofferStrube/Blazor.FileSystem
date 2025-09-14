@@ -53,7 +53,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     /// <inheritdoc cref="IFileSystemHandle.GetNameAsync"/>
     public string Name => inProcessHelper.Invoke<string>("getAttribute", JSReference, "name");
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="FileSystemDirectoryHandle.ValuesAsync"/>
     public new async Task<IFileSystemHandleInProcess[]> ValuesAsync()
     {
         IJSObjectReference helper = await helperTask.Value;
