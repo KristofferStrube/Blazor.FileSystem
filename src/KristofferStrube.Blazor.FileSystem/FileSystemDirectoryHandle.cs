@@ -13,7 +13,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
     /// <inheritdoc/>
     public static new async Task<FileSystemDirectoryHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference);
+        return await CreateAsync(jSRuntime, jSReference, FileSystemOptions.DefaultInstance);
     }
 
     /// <inheritdoc/>
@@ -61,12 +61,28 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
                     {
                         await using FileSystemHandle fileSystemHandle = await FileSystemHandle.CreateAsync(
                             JSRuntime,
-                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i),
-                            new CreationOptions() { DisposesJSReference = true });
-                        fileSystemHandle.FileSystemOptions = FileSystemOptions;
-                        return (await fileSystemHandle.GetKindAsync() is FileSystemHandleKind.File)
-                            ? await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference)
-                            : await FileSystemDirectoryHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference);
+                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i), FileSystemOptions);
+
+                        FileSystemHandleKind kind = await fileSystemHandle.GetKindAsync();
+
+                        if (kind is FileSystemHandleKind.File)
+                        {
+                            FileSystemFileHandle instance = await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            {
+                                DisposesJSReference = true
+                            });
+                            instance.FileSystemOptions = FileSystemOptions;
+                            return instance;
+                        }
+                        else
+                        {
+                            FileSystemDirectoryHandle instance = await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            {
+                                DisposesJSReference = true
+                            });
+                            instance.FileSystemOptions = FileSystemOptions;
+                            return instance;
+                        }
                     }
                 )
                 .ToArray()

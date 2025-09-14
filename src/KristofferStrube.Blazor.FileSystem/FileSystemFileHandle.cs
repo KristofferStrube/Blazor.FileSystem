@@ -52,7 +52,10 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     public async Task<File> GetFileAsync()
     {
         IJSObjectReference jSFile = await JSReference.InvokeAsync<IJSObjectReference>("getFile");
-        return await File.CreateAsync(JSRuntime, jSFile);
+        return await File.CreateAsync(JSRuntime, jSFile, new()
+        {
+            DisposesJSReference = true
+        });
     }
 
     /// <summary>
@@ -64,10 +67,12 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     /// <param name="fileSystemCreateWritableOptions">
     /// If <see cref="FileSystemCreateWritableOptions.KeepExistingData"/> is <see langword="false"/> or not specified, the temporary file starts out empty, otherwise the existing file is first copied to this temporary file.
     /// </param>
-    /// <returns></returns>
     public async Task<FileSystemWritableFileStream> CreateWritableAsync(FileSystemCreateWritableOptions? fileSystemCreateWritableOptions = null)
     {
         IJSObjectReference jSFileSystemWritableFileStream = await JSReference.InvokeAsync<IJSObjectReference>("createWritable", fileSystemCreateWritableOptions);
-        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream);
+        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, new CreationOptions()
+        {
+            DisposesJSReference = true
+        });
     }
 }
