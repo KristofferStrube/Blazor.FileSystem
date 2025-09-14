@@ -38,7 +38,7 @@ public static class IServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="IStorageManagerService"/> to the service collection with the option to configure where the helper JS module is located.
+    /// Adds a <see cref="IStorageManagerServiceInProcess"/> to the service collection with the option to configure where the helper JS module is located.
     /// </summary>
     /// <param name="serviceCollection">The service collection to add the service to.</param>
     /// <param name="configure">An action to configure the <see cref="FileSystemOptions"/> that defines where the helper JS module is located.</param>
