@@ -22,10 +22,27 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
         return Task.FromResult(new FileSystemDirectoryHandle(jSRuntime, jSReference, FileSystemOptions.DefaultInstance, options));
     }
 
-    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)"/>
+    /// <summary>
+    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemDirectoryHandle"/> with options for where the JS helper module will be found at.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
+    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
+    /// <param name="options">Options for what path the JS helper module will be found at.</param>
     public static new Task<FileSystemDirectoryHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
     {
         return Task.FromResult(new FileSystemDirectoryHandle(jSRuntime, jSReference, options, new() { DisposesJSReference = true }));
+    }
+
+    /// <summary>
+    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemDirectoryHandle"/> with options for where the JS helper module will be found at and whether its JS reference should be disposed.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
+    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
+    /// <param name="fileSystemOptions">Options for what path the JS helper module will be found at.</param>
+    /// <param name="creationOptions">Options for what path the JS helper module will be found at.</param>
+    public static new Task<FileSystemDirectoryHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions creationOptions)
+    {
+        return Task.FromResult(new FileSystemDirectoryHandle(jSRuntime, jSReference, fileSystemOptions, creationOptions));
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)"/>
@@ -61,27 +78,23 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
                     {
                         await using FileSystemHandle fileSystemHandle = await FileSystemHandle.CreateAsync(
                             JSRuntime,
-                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i), FileSystemOptions);
+                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i), fileSystemOptions);
 
                         FileSystemHandleKind kind = await fileSystemHandle.GetKindAsync();
 
                         if (kind is FileSystemHandleKind.File)
                         {
-                            FileSystemFileHandle instance = await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            return await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, fileSystemOptions, new CreationOptions()
                             {
                                 DisposesJSReference = true
                             });
-                            instance.FileSystemOptions = FileSystemOptions;
-                            return instance;
                         }
                         else
                         {
-                            FileSystemDirectoryHandle instance = await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, fileSystemOptions, new CreationOptions()
                             {
                                 DisposesJSReference = true
                             });
-                            instance.FileSystemOptions = FileSystemOptions;
-                            return instance;
                         }
                     }
                 )
@@ -105,9 +118,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
     public async Task<FileSystemFileHandle> GetFileHandleAsync(string name, FileSystemGetFileOptions? options = null)
     {
         IJSObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSObjectReference>("getFileHandle", name, options);
-        FileSystemFileHandle file = await FileSystemFileHandle.CreateAsync(JSRuntime, jSFileSystemFileHandle, new CreationOptions() { DisposesJSReference = true });
-        file.FileSystemOptions = FileSystemOptions;
-        return file;
+        return await FileSystemFileHandle.CreateAsync(JSRuntime, jSFileSystemFileHandle, fileSystemOptions, new CreationOptions() { DisposesJSReference = true });
     }
 
     /// <summary>
@@ -126,7 +137,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
     public async Task<FileSystemDirectoryHandle> GetDirectoryHandleAsync(string name, FileSystemGetDirectoryOptions? options = null)
     {
         IJSObjectReference jSFileSystemDirectoryHandle = await JSReference.InvokeAsync<IJSObjectReference>("getDirectoryHandle", name, options);
-        return new(JSRuntime, jSFileSystemDirectoryHandle, FileSystemOptions, new() { DisposesJSReference = true });
+        return new(JSRuntime, jSFileSystemDirectoryHandle, fileSystemOptions, new() { DisposesJSReference = true });
     }
 
     /// <summary>

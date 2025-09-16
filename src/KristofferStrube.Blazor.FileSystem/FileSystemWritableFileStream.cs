@@ -125,7 +125,6 @@ public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSys
     /// Updates the current file cursor offset the position bytes from the top of the file.
     /// </summary>
     /// <param name="position">The new cursor position</param>
-    /// <returns></returns>
     public async Task SeekAsync(ulong position)
     {
         Position = (long)position;

@@ -1,32 +1,30 @@
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
-/// <inheritdoc cref="IStorageManagerService"/>
+/// <inheritdoc cref="IStorageManagerServiceInProcess"/>
 public class StorageManagerServiceInProcess : StorageManagerService, IStorageManagerServiceInProcess
 {
     /// <summary>
-    /// Creates a <see cref="StorageManagerServiceInProcess"/>
+    /// Creates the service.
     /// </summary>
     /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
     public StorageManagerServiceInProcess(IJSRuntime jSRuntime) : base(jSRuntime) { }
 
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
     {
         return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
     }
 
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
     {
         IJSInProcessObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("navigator.storage.getDirectory");
-        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options);
+        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options, new CreationOptions()
+        {
+            DisposesJSReference = true
+        });
     }
 }

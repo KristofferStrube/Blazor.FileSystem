@@ -20,7 +20,7 @@ public class StorageManagerService : IStorageManagerService, IAsyncDisposable
     /// <summary>
     /// Creates the service. Should be a scoped service, especially when used in Blazor Server render mode.
     /// </summary>
-    /// <param name="jSRuntime"></param>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
     public StorageManagerService(IJSRuntime jSRuntime)
     {
         helperTask = new(() => jSRuntime.GetHelperAsync(FileSystemOptions.DefaultInstance));
@@ -37,12 +37,10 @@ public class StorageManagerService : IStorageManagerService, IAsyncDisposable
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
     {
         IJSObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSObjectReference>("navigator.storage.getDirectory");
-        FileSystemDirectoryHandle instance = await FileSystemDirectoryHandle.CreateAsync(jSRuntime, directoryHandle, new CreationOptions()
+        return await FileSystemDirectoryHandle.CreateAsync(jSRuntime, directoryHandle, options, new CreationOptions()
         {
             DisposesJSReference = true
         });
-        instance.FileSystemOptions = options;
-        return instance;
     }
 
     /// <inheritdoc/>

@@ -5,20 +5,25 @@ using Microsoft.JSInterop;
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// Base class for wrapping objects in the Blazor.WebAudio library.
+/// Base class for wrapping objects in the Blazor.FileSystem library.
 /// </summary>
-[IJSWrapperConverter]
 public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
 {
     /// <summary>
-    /// A lazily evaluated task that gives access to helper methods.
+    /// A lazily evaluated JS module that gives access to helper methods.
     /// </summary>
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
 
     /// <summary>
-    /// Options for where it will find the script file that it needs to make complex JSInterop.
+    /// Options for where the helper JS module is located.
     /// </summary>
-    public FileSystemOptions FileSystemOptions { get; set; }
+    protected readonly FileSystemOptions fileSystemOptions;
+
+    /// <summary>
+    /// Options for where the helper JS module is located.
+    /// </summary>
+    [Obsolete("This is here for backwards compatibility. It was replaced by 'fileSystemOptions' as 'options' was ambiguous.")]
+    protected readonly FileSystemOptions options;
 
     /// <inheritdoc/>
     public IJSRuntime JSRuntime { get; }
@@ -30,9 +35,12 @@ public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
     public bool DisposesJSReference { get; }
 
     /// <inheritdoc cref="IJSCreatable{T}.CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
-    protected BaseJSWrapper(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options)
+    internal BaseJSWrapper(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options)
     {
-        FileSystemOptions = fileSystemOptions;
+        this.fileSystemOptions = fileSystemOptions;
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.options = fileSystemOptions;
+#pragma warning restore CS0618 // Type or member is obsolete
         helperTask = new(async () => await jSRuntime.GetHelperAsync(fileSystemOptions));
         JSReference = jSReference;
         JSRuntime = jSRuntime;

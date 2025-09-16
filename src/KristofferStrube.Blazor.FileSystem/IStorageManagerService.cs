@@ -15,6 +15,6 @@ public interface IStorageManagerService
     /// <inheritdoc cref="GetOriginPrivateDirectoryAsync()" path="/summary"/>
     /// This overload has explicit options for how you want to import the JS helper module used in the library.
     /// </summary>
-    /// <param name="options">Options for how the directory should construct its JS helper module</param>
+    /// <param name="options">Options for how the wrapper should construct its JS helper module</param>
     public Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync(FileSystemOptions options);
 }

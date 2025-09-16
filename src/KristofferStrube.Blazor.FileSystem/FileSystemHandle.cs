@@ -19,10 +19,27 @@ public class FileSystemHandle : BaseJSWrapper, IFileSystemHandle, IJSCreatable<F
         return Task.FromResult(new FileSystemHandle(jSRuntime, jSReference, FileSystemOptions.DefaultInstance, options));
     }
 
-    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)" path="/summary"/>
+    /// <summary>
+    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemHandle"/> with options for where the JS helper module will be found at.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
+    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
+    /// <param name="options">Options for what path the JS helper module will be found at.</param>
     public static Task<FileSystemHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
     {
         return Task.FromResult(new FileSystemHandle(jSRuntime, jSReference, options, new() { DisposesJSReference = true }));
+    }
+
+    /// <summary>
+    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemHandle"/> with options for where the JS helper module will be found at and whether its JS reference should be disposed.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
+    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
+    /// <param name="fileSystemOptions">Options for what path the JS helper module will be found at.</param>
+    /// <param name="creationOptions">Options for what path the JS helper module will be found at.</param>
+    public static Task<FileSystemHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions creationOptions)
+    {
+        return Task.FromResult(new FileSystemHandle(jSRuntime, jSReference, fileSystemOptions, creationOptions));
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)" path="/summary"/>

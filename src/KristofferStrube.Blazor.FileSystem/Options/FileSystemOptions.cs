@@ -3,7 +3,7 @@
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// Options for what path the JS Helper module will be found at.
+/// Options for what path the JS helper module will be found at.
 /// </summary>
 public class FileSystemOptions
 {
