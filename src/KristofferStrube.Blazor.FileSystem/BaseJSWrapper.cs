@@ -10,7 +10,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 public abstract class BaseJSWrapper : IAsyncDisposable, IJSWrapper
 {
     /// <summary>
-    /// A lazily evaluated JS module that gives access to helper methods.
+    /// A lazily evaluated JS module that gives access to helper methods for the File System API.
     /// </summary>
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
 

@@ -13,9 +13,7 @@ public class FileSystemWritableFileStreamInProcess : FileSystemWritableFileStrea
     /// <inheritdoc/>
     public new IJSInProcessObjectReference JSReference { get; }
 
-    /// <summary>
-    /// A lazily evaluated task that gives access to helper methods.
-    /// </summary>
+    /// <inheritdoc cref="BaseJSWrapper.helperTask"/>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference)"/>

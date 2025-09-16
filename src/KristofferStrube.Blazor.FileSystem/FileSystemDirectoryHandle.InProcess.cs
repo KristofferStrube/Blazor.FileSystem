@@ -15,9 +15,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     /// <inheritdoc cref="IJSInProcessCreatable{TInProcess, T}.JSReference"/>
     public new IJSInProcessObjectReference JSReference { get; set; }
 
-    /// <summary>
-    /// A lazily evaluated task that gives access to helper methods.
-    /// </summary>
+    /// <inheritdoc cref="FileSystemFileHandleInProcess.inProcessHelper"/>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
     /// <inheritdoc/>

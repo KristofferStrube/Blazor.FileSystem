@@ -7,9 +7,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// <inheritdoc cref="IStorageManagerService"/>
 public class StorageManagerService : IStorageManagerService, IAsyncDisposable
 {
-    /// <summary>
-    /// A lazily evaluated task that gives access to helper methods.
-    /// </summary>
+    /// <inheritdoc cref="BaseJSWrapper.helperTask"/>
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
 
     /// <summary>

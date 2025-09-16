@@ -14,9 +14,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 [IJSWrapperConverter]
 public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSystemWritableFileStream>
 {
-    /// <summary>
-    /// A lazily evaluated task that gives access to helper methods for the File System API.
-    /// </summary>
+    /// <inheritdoc cref="BaseJSWrapper.helperTask"/>
     protected Lazy<Task<IJSObjectReference>> FileSystemHelperTask { get; }
 
     /// <inheritdoc/>

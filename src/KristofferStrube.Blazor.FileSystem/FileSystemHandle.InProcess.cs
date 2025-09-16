@@ -13,7 +13,7 @@ public class FileSystemHandleInProcess : FileSystemHandle, IFileSystemHandleInPr
     public new IJSInProcessObjectReference JSReference { get; set; }
 
     /// <summary>
-    /// A lazily evaluated task that gives access to helper methods.
+    /// A JS module that gives access to helper methods for the File System API.
     /// </summary>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
