@@ -1,13 +1,16 @@
 ﻿using KristofferStrube.Blazor.DOM.Extensions;
 using KristofferStrube.Blazor.FileSystem.Extensions;
+using KristofferStrube.Blazor.Streams;
 using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
 /// <summary>
-/// <see href="https://fs.spec.whatwg.org/#filesystemwritablefilestream">FileSystemWritableFileStream browser specs</see>
+/// An in-process <see cref="WritableStream"/> that can write to and seek in a <see cref="File"/>.
 /// </summary>
+/// <remarks><see href="https://fs.spec.whatwg.org/#filesystemwritablefilestream">See the API definition here</see>.</remarks>
+[IJSWrapperConverter]
 public class FileSystemWritableFileStreamInProcess : FileSystemWritableFileStream, IJSInProcessCreatable<FileSystemWritableFileStreamInProcess, FileSystemWritableFileStream>
 {
     /// <inheritdoc/>
