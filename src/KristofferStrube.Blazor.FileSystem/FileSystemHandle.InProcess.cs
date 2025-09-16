@@ -65,7 +65,7 @@ public class FileSystemHandleInProcess : FileSystemHandle, IFileSystemHandleInPr
     /// <inheritdoc/>
     public FileSystemHandleKind Kind => inProcessHelper.Invoke<FileSystemHandleKind>("getAttribute", JSReference, "kind");
 
-    /// <inheritdoc cref="FileSystemHandle.GetNameAsync"/>
+    /// <inheritdoc/>
     public string Name => inProcessHelper.Invoke<string>("getAttribute", JSReference, "name");
 
     /// <inheritdoc/>
