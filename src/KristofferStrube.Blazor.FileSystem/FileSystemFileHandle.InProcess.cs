@@ -84,7 +84,7 @@ public class FileSystemFileHandleInProcess : FileSystemFileHandle, IFileSystemHa
     public new async Task<FileSystemWritableFileStreamInProcess> CreateWritableAsync(FileSystemCreateWritableOptions? fileSystemCreateWritableOptions = null)
     {
         IJSInProcessObjectReference jSFileSystemWritableFileStream = await JSReference.InvokeAsync<IJSInProcessObjectReference>("createWritable", fileSystemCreateWritableOptions);
-        return new FileSystemWritableFileStreamInProcess(JSRuntime, inProcessHelper, jSFileSystemWritableFileStream, new() { DisposesJSReference = true });
+        return await FileSystemWritableFileStreamInProcess.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, fileSystemOptions, new() { DisposesJSReference = true });
     }
 
     /// <inheritdoc/>
