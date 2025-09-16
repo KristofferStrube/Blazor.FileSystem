@@ -1,39 +1,47 @@
 using KristofferStrube.Blazor.FileSystem.Extensions;
-using Microsoft.Extensions.Options;
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
 
-public class StorageManagerService : IStorageManagerService
+/// <inheritdoc cref="IStorageManagerService"/>
+public class StorageManagerService : IStorageManagerService, IAsyncDisposable
 {
+    /// <inheritdoc cref="BaseJSWrapper.helperTask"/>
     protected readonly Lazy<Task<IJSObjectReference>> helperTask;
+
+    /// <summary>
+    /// The <see cref="JSRuntime"/> used for making JSInterop calls.
+    /// </summary>
     protected readonly IJSRuntime jSRuntime;
 
+    /// <summary>
+    /// Creates the service. Should be a scoped service, especially when used in Blazor Server render mode.
+    /// </summary>
+    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
     public StorageManagerService(IJSRuntime jSRuntime)
     {
         helperTask = new(() => jSRuntime.GetHelperAsync(FileSystemOptions.DefaultInstance));
         this.jSRuntime = jSRuntime;
     }
 
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync()
     {
         return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
     }
 
-    /// <summary>
-    /// <see href="https://fs.spec.whatwg.org/#dom-storagemanager-getdirectory">getDirectory() for StorageManager browser specs</see>
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
     {
         IJSObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSObjectReference>("navigator.storage.getDirectory");
-        return new FileSystemDirectoryHandle(jSRuntime, directoryHandle, options);
+        return await FileSystemDirectoryHandle.CreateAsync(jSRuntime, directoryHandle, options, new CreationOptions()
+        {
+            DisposesJSReference = true
+        });
     }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         if (helperTask.IsValueCreated)

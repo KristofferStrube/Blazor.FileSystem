@@ -16,11 +16,6 @@ internal static class IJSRuntimeExtensions
 
     private static async Task<T> GetHelperAsync<T>(IJSRuntime jSRuntime, FileSystemOptions options)
     {
-        return await jSRuntime.InvokeAsync<T>("import", GetScriptPath(options));
-    }
-
-    private static string GetScriptPath(FileSystemOptions options)
-    {
-        return options.FullScriptPath;
+        return await jSRuntime.InvokeAsync<T>("import", options.FullScriptPath);
     }
 }
