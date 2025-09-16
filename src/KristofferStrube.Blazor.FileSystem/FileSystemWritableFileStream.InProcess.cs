@@ -13,7 +13,7 @@ public class FileSystemWritableFileStreamInProcess : FileSystemWritableFileStrea
     /// <inheritdoc/>
     public new IJSInProcessObjectReference JSReference { get; }
 
-    /// <inheritdoc cref="BaseJSWrapper.helperTask"/>
+    /// <inheritdoc cref="FileSystemHandleInProcess.inProcessHelper"/>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSInProcessObjectReference)"/>

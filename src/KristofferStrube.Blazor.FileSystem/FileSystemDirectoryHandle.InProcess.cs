@@ -15,7 +15,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     /// <inheritdoc cref="IJSInProcessCreatable{TInProcess, T}.JSReference"/>
     public new IJSInProcessObjectReference JSReference { get; set; }
 
-    /// <inheritdoc cref="FileSystemFileHandleInProcess.inProcessHelper"/>
+    /// <inheritdoc cref="FileSystemHandleInProcess.inProcessHelper"/>
     protected readonly IJSInProcessObjectReference inProcessHelper;
 
     /// <inheritdoc/>
