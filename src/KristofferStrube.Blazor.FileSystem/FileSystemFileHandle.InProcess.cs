@@ -22,7 +22,7 @@ public class FileSystemFileHandleInProcess : FileSystemFileHandle, IFileSystemHa
     /// <inheritdoc/>
     public static async Task<FileSystemFileHandleInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference);
+        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
     }
 
     /// <inheritdoc/>
