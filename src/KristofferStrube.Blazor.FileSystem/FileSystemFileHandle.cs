@@ -20,48 +20,18 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     /// <inheritdoc/>
     public static new Task<FileSystemFileHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options)
     {
-        return Task.FromResult(new FileSystemFileHandle(jSRuntime, jSReference, FileSystemOptions.DefaultInstance, options));
-    }
-
-    /// <summary>
-    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemFileHandle"/> with options for where the JS helper module will be found at.
-    /// </summary>
-    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
-    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
-    /// <param name="options">Options for what path the JS helper module will be found at.</param>
-    public static new Task<FileSystemFileHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
-    {
-        return Task.FromResult(new FileSystemFileHandle(jSRuntime, jSReference, options, new() { DisposesJSReference = true }));
-    }
-
-    /// <summary>
-    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemFileHandle"/> with options for where the JS helper module will be found at and whether its JS reference should be disposed.
-    /// </summary>
-    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
-    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
-    /// <param name="fileSystemOptions">Options for what path the JS helper module will be found at.</param>
-    /// <param name="creationOptions">Options for what path the JS helper module will be found at.</param>
-    public static new Task<FileSystemFileHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions creationOptions)
-    {
-        return Task.FromResult(new FileSystemFileHandle(jSRuntime, jSReference, fileSystemOptions, creationOptions));
+        return Task.FromResult(new FileSystemFileHandle(jSRuntime, jSReference, options));
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)" path="/summary"/>
     [Obsolete("This will be removed in the next major release as all creator methods should be asynchronous for uniformity. Use CreateAsync instead.")]
     public static new FileSystemFileHandle Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return Create(jSRuntime, jSReference, FileSystemOptions.DefaultInstance);
-    }
-
-    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)" path="/summary"/>
-    [Obsolete("This will be removed in the next major release as all creator methods should be asynchronous for uniformity. Use CreateAsync instead.")]
-    public static new FileSystemFileHandle Create(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
-    {
-        return new(jSRuntime, jSReference, options, new());
+        return new(jSRuntime, jSReference, new());
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
-    protected FileSystemFileHandle(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options) : base(jSRuntime, jSReference, fileSystemOptions, options) { }
+    protected FileSystemFileHandle(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options) { }
 
     /// <summary>
     /// Returns a <see cref="File"/> that that represents the state of the file on the disk. If the file on disk changes or is removed after this method has returned the file then this <see cref="File"/> will likely no longer be readable.
@@ -87,7 +57,7 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     public async Task<FileSystemWritableFileStream> CreateWritableAsync(FileSystemCreateWritableOptions? fileSystemCreateWritableOptions = null)
     {
         IJSObjectReference jSFileSystemWritableFileStream = await JSReference.InvokeAsync<IJSObjectReference>("createWritable", fileSystemCreateWritableOptions);
-        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, fileSystemOptions, new CreationOptions()
+        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, new CreationOptions()
         {
             DisposesJSReference = true
         });

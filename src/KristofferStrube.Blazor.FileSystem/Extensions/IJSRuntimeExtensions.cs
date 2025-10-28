@@ -4,18 +4,15 @@ namespace KristofferStrube.Blazor.FileSystem.Extensions;
 
 internal static class IJSRuntimeExtensions
 {
-    internal static async Task<IJSObjectReference> GetHelperAsync(this IJSRuntime jSRuntime, FileSystemOptions options)
+    private const string helperPath = "./_content/KristofferStrube.Blazor.FileSystem/KristofferStrube.Blazor.FileSystem.js";
+
+    internal static async Task<IJSObjectReference> GetHelperAsync(this IJSRuntime jSRuntime)
     {
-        return await GetHelperAsync<IJSObjectReference>(jSRuntime, options);
+        return await jSRuntime.InvokeAsync<IJSObjectReference>("import", helperPath);
     }
 
-    internal static async Task<IJSInProcessObjectReference> GetInProcessHelperAsync(this IJSRuntime jSRuntime, FileSystemOptions options)
+    internal static async Task<IJSInProcessObjectReference> GetInProcessHelperAsync(this IJSRuntime jSRuntime)
     {
-        return await GetHelperAsync<IJSInProcessObjectReference>(jSRuntime, options);
-    }
-
-    private static async Task<T> GetHelperAsync<T>(IJSRuntime jSRuntime, FileSystemOptions options)
-    {
-        return await jSRuntime.InvokeAsync<T>("import", options.FullScriptPath);
+        return await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("import", helperPath);
     }
 }

@@ -15,14 +15,8 @@ public class StorageManagerServiceInProcess : StorageManagerService, IStorageMan
     /// <inheritdoc/>
     public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync()
     {
-        return await GetOriginPrivateDirectoryAsync(FileSystemOptions.DefaultInstance);
-    }
-
-    /// <inheritdoc/>
-    public new async Task<FileSystemDirectoryHandleInProcess> GetOriginPrivateDirectoryAsync(FileSystemOptions options)
-    {
         IJSInProcessObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSInProcessObjectReference>("navigator.storage.getDirectory");
-        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, options, new CreationOptions()
+        return await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, directoryHandle, new CreationOptions()
         {
             DisposesJSReference = true
         });

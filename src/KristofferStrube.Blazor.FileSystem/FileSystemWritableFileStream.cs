@@ -32,43 +32,20 @@ public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSys
     /// <inheritdoc/>
     public static new Task<FileSystemWritableFileStream> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options)
     {
-        return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference, FileSystemOptions.DefaultInstance, options));
-    }
-
-    /// <summary>
-    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemWritableFileStream"/> with options for where the JS helper module will be found at.
-    /// </summary>
-    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
-    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
-    /// <param name="options">Options for what path the JS helper module will be found at.</param>
-    public static Task<FileSystemWritableFileStream> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions options)
-    {
-        return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference, options, new() { DisposesJSReference = true }));
-    }
-
-    /// <summary>
-    /// Constructs a wrapper instance for an equivalent JS instance of a <see cref="FileSystemWritableFileStream"/> with options for where the JS helper module will be found at and whether its JS reference should be disposed.
-    /// </summary>
-    /// <param name="jSRuntime">An <see cref="IJSRuntime"/> instance.</param>
-    /// <param name="jSReference">A JS reference to an existing JS instance that should be wrapped.</param>
-    /// <param name="fileSystemOptions">Options for what path the JS helper module will be found at.</param>
-    /// <param name="creationOptions">Options for what path the JS helper module will be found at.</param>
-    public static Task<FileSystemWritableFileStream> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions creationOptions)
-    {
-        return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference, fileSystemOptions, creationOptions));
+        return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference, options));
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)"/>
     [Obsolete("This will be removed in the next major release as all creator methods should be asynchronous for uniformity. Use CreateAsync instead.")]
     public static new FileSystemWritableFileStream Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return new FileSystemWritableFileStream(jSRuntime, jSReference, FileSystemOptions.DefaultInstance, new() { DisposesJSReference = true });
+        return new FileSystemWritableFileStream(jSRuntime, jSReference, new() { DisposesJSReference = true });
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
-    protected FileSystemWritableFileStream(IJSRuntime jSRuntime, IJSObjectReference jSReference, FileSystemOptions fileSystemOptions, CreationOptions options) : base(jSRuntime, jSReference, options)
+    protected FileSystemWritableFileStream(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options)
     {
-        FileSystemHelperTask = new(() => jSRuntime.GetHelperAsync(fileSystemOptions));
+        FileSystemHelperTask = new(jSRuntime.GetHelperAsync);
     }
 
     /// <inheritdoc/>
