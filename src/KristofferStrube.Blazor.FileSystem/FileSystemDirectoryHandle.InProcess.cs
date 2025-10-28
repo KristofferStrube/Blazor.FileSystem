@@ -20,7 +20,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     /// <inheritdoc/>
     public static async Task<FileSystemDirectoryHandleInProcess> CreateAsync(IJSRuntime jSRuntime, IJSInProcessObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
+        return await CreateAsync(jSRuntime, jSReference, new());
     }
 
     /// <inheritdoc/>
@@ -64,14 +64,14 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
 
                     if (kind is FileSystemHandleKind.File)
                     {
-                        return await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                        return await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
                         {
                             DisposesJSReference = true
                         });
                     }
                     else
                     {
-                        return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                        return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
                         {
                             DisposesJSReference = true
                         });
@@ -86,7 +86,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     public new async Task<FileSystemFileHandleInProcess> GetFileHandleAsync(string name, FileSystemGetFileOptions? options = null)
     {
         IJSInProcessObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getFileHandle", name, options);
-        return await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, jSFileSystemFileHandle, new CreationOptions()
+        return await FileSystemFileHandleInProcess.CreateAsync(JSRuntime, jSFileSystemFileHandle, new()
         {
             DisposesJSReference = true
         });
@@ -96,7 +96,7 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
     public new async Task<FileSystemDirectoryHandleInProcess> GetDirectoryHandleAsync(string name, FileSystemGetDirectoryOptions? options = null)
     {
         IJSInProcessObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSInProcessObjectReference>("getDirectoryHandle", name, options);
-        return await CreateAsync(JSRuntime, jSFileSystemFileHandle, new CreationOptions()
+        return await CreateAsync(JSRuntime, jSFileSystemFileHandle, new()
         {
             DisposesJSReference = true
         });

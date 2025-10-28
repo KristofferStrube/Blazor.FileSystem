@@ -26,7 +26,7 @@ public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSys
     /// <inheritdoc/>
     public static new async Task<FileSystemWritableFileStream> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
+        return await CreateAsync(jSRuntime, jSReference, new());
     }
 
     /// <inheritdoc/>

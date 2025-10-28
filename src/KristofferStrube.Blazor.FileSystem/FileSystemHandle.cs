@@ -10,7 +10,7 @@ public class FileSystemHandle : BaseJSWrapper, IFileSystemHandle, IJSCreatable<F
     /// <inheritdoc/>
     public static async Task<FileSystemHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
+        return await CreateAsync(jSRuntime, jSReference, new());
     }
 
     /// <inheritdoc/>

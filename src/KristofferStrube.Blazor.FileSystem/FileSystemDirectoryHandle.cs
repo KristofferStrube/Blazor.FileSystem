@@ -55,14 +55,14 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
 
                         if (kind is FileSystemHandleKind.File)
                         {
-                            return await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            return await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
                             {
                                 DisposesJSReference = true
                             });
                         }
                         else
                         {
-                            return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new CreationOptions()
+                            return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
                             {
                                 DisposesJSReference = true
                             });
@@ -89,7 +89,7 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
     public async Task<FileSystemFileHandle> GetFileHandleAsync(string name, FileSystemGetFileOptions? options = null)
     {
         IJSObjectReference jSFileSystemFileHandle = await JSReference.InvokeAsync<IJSObjectReference>("getFileHandle", name, options);
-        return await FileSystemFileHandle.CreateAsync(JSRuntime, jSFileSystemFileHandle, new CreationOptions() { DisposesJSReference = true });
+        return await FileSystemFileHandle.CreateAsync(JSRuntime, jSFileSystemFileHandle, new() { DisposesJSReference = true });
     }
 
     /// <summary>

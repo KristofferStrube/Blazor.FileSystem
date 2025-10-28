@@ -1,4 +1,3 @@
-using KristofferStrube.Blazor.WebIDL;
 using Microsoft.JSInterop;
 
 namespace KristofferStrube.Blazor.FileSystem;
@@ -24,7 +23,7 @@ public class StorageManagerService : IStorageManagerService
     public async Task<FileSystemDirectoryHandle> GetOriginPrivateDirectoryAsync()
     {
         IJSObjectReference directoryHandle = await jSRuntime.InvokeAsync<IJSObjectReference>("navigator.storage.getDirectory");
-        return await FileSystemDirectoryHandle.CreateAsync(jSRuntime, directoryHandle, new CreationOptions()
+        return await FileSystemDirectoryHandle.CreateAsync(jSRuntime, directoryHandle, new()
         {
             DisposesJSReference = true
         });

@@ -14,7 +14,7 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     /// <inheritdoc/>
     public static new async Task<FileSystemFileHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
     {
-        return await CreateAsync(jSRuntime, jSReference, new CreationOptions());
+        return await CreateAsync(jSRuntime, jSReference, new());
     }
 
     /// <inheritdoc/>
@@ -57,7 +57,7 @@ public class FileSystemFileHandle : FileSystemHandle, IJSCreatable<FileSystemFil
     public async Task<FileSystemWritableFileStream> CreateWritableAsync(FileSystemCreateWritableOptions? fileSystemCreateWritableOptions = null)
     {
         IJSObjectReference jSFileSystemWritableFileStream = await JSReference.InvokeAsync<IJSObjectReference>("createWritable", fileSystemCreateWritableOptions);
-        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, new CreationOptions()
+        return await FileSystemWritableFileStream.CreateAsync(JSRuntime, jSFileSystemWritableFileStream, new()
         {
             DisposesJSReference = true
         });
