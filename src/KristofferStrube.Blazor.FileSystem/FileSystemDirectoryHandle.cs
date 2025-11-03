@@ -22,13 +22,6 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
         return Task.FromResult(new FileSystemDirectoryHandle(jSRuntime, jSReference, options));
     }
 
-    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)"/>
-    [Obsolete("This will be removed in the next major release as all creator methods should be asynchronous for uniformity. Use CreateAsync instead.")]
-    public static new FileSystemDirectoryHandle Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
-    {
-        return new(jSRuntime, jSReference, new());
-    }
-
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
     protected FileSystemDirectoryHandle(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options) { }
 

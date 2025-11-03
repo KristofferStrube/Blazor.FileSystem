@@ -35,13 +35,6 @@ public class FileSystemWritableFileStream : WritableStream, IJSCreatable<FileSys
         return Task.FromResult(new FileSystemWritableFileStream(jSRuntime, jSReference, options));
     }
 
-    /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference)"/>
-    [Obsolete("This will be removed in the next major release as all creator methods should be asynchronous for uniformity. Use CreateAsync instead.")]
-    public static new FileSystemWritableFileStream Create(IJSRuntime jSRuntime, IJSObjectReference jSReference)
-    {
-        return new FileSystemWritableFileStream(jSRuntime, jSReference, new() { DisposesJSReference = true });
-    }
-
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
     protected FileSystemWritableFileStream(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options)
     {
