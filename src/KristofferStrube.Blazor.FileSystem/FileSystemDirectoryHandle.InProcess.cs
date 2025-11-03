@@ -55,9 +55,13 @@ public class FileSystemDirectoryHandleInProcess : FileSystemDirectoryHandle, IFi
                 .Range(0, length)
                 .Select<int, Task<IFileSystemHandleInProcess>>(async i =>
                 {
-                    FileSystemHandleInProcess fileSystemHandle = await FileSystemHandleInProcess.CreateAsync(
+                    await using FileSystemHandleInProcess fileSystemHandle = await FileSystemHandleInProcess.CreateAsync(
                         JSRuntime,
-                        await jSEntries.InvokeAsync<IJSInProcessObjectReference>("at", i)
+                        await jSEntries.InvokeAsync<IJSInProcessObjectReference>("at", i),
+                        new()
+                        {
+                            DisposesJSReference = false // We explicitly show that we don't expose the reference as it is used later.
+                        }
                     );
 
                     FileSystemHandleKind kind = await fileSystemHandle.GetKindAsync();

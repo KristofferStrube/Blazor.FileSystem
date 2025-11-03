@@ -48,7 +48,11 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
                     {
                         await using FileSystemHandle fileSystemHandle = await FileSystemHandle.CreateAsync(
                             JSRuntime,
-                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i)
+                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i),
+                            new()
+                            {
+                                DisposesJSReference = false // We explicitly show that we don't expose the reference as it is used later.
+                            }
                         );
 
                         FileSystemHandleKind kind = await fileSystemHandle.GetKindAsync();
