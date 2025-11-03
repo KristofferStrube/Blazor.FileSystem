@@ -5,9 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Deprecated
-- Deprecated synchronous `FileSystemDirectoryHandle.Create`, `FileSystemFileHandle.Create`, `FileSystemHandle.Create`, and `FileSystemWritableFileStream.Create` creator method in favor of asynchronous `CreateAsync` methods.
 ### Removed
+- Removed synchronous `FileSystemDirectoryHandle.Create`, `FileSystemFileHandle.Create`, `FileSystemHandle.Create`, and `FileSystemWritableFileStream.Create` creator methods in favor of asynchronous `CreateAsync` methods.
 - Removed `FileSystemOptions` class and the overloaded methods that used it for customizing the helper-module path, as the same could be achieved with an `importmap`.
 ### Changed
 - Changed the version of `Blazor.FileAPI` to use the newest version, which is 0.4.0.
