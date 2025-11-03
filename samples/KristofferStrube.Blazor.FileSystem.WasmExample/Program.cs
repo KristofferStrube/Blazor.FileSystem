@@ -11,12 +11,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddStorageManagerServiceInProcess(options =>
-{
-    // Configure with custom script path
-    // options.BasePath = "content/";
-    // options.ScriptPath = $"custom-path/{FileSystemOptions.DefaultNamespace}.js";
-});
+builder.Services.AddStorageManagerServiceInProcess();
 
 builder.Services.AddURLServiceInProcess();
 
