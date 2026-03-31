@@ -14,9 +14,28 @@ public class FileSystemHandle : BaseJSWrapper, IFileSystemHandle, IJSCreatable<F
     }
 
     /// <inheritdoc/>
-    public static Task<FileSystemHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options)
+    public static async Task<FileSystemHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options)
     {
-        return Task.FromResult(new FileSystemHandle(jSRuntime, jSReference, options));
+        await using ValueReference handle = new(jSRuntime, jSReference, null, new() { DisposesJSReference = false });
+
+        if (jSReference is IJSInProcessObjectReference inProcessObjectReference)
+        {
+            handle.ValueMapper = new()
+            {
+                ["filesystemdirectoryhandle"] = async () => await FileSystemDirectoryHandleInProcess.CreateAsync(jSRuntime, inProcessObjectReference, new() { DisposesJSReference = true }),
+                ["filesystemfilehandle"] = async () => await FileSystemFileHandleInProcess.CreateAsync(jSRuntime, inProcessObjectReference, new() { DisposesJSReference = true }),
+            };
+        }
+        else
+        {
+            handle.ValueMapper = new()
+            {
+                ["filesystemdirectoryhandle"] = async () => await FileSystemDirectoryHandle.CreateAsync(jSRuntime, jSReference, new() { DisposesJSReference = true }),
+                ["filesystemfilehandle"] = async () => await FileSystemFileHandle.CreateAsync(jSRuntime, jSReference, new() { DisposesJSReference = true }),
+            };
+        }
+
+        return (FileSystemHandle)(await handle.GetValueAsync())!;
     }
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
