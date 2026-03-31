@@ -1,3 +1,4 @@
+using KristofferStrube.Blazor.WebIDL;
 using Microsoft.AspNetCore.Components;
 
 namespace KristofferStrube.Blazor.FileSystem.WasmExample.Shared;
@@ -13,7 +14,10 @@ public partial class ElementExplorer
     {
         if (Element is not FileSystemDirectoryHandleInProcess directoryHandle)
             return;
-        children = (await directoryHandle.ValuesAsync()).ToList();
+
+        await using AsyncIterator<FileSystemHandle> iterator = await directoryHandle.ValuesAsync(disposePreviousValueWhenMovingToNextValue: false);
+
+        children = await iterator.Select(handle => (IFileSystemHandleInProcess)handle).ToListAsync();
     }
 
     async Task Remove(IFileSystemHandleInProcess element)

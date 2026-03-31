@@ -8,7 +8,7 @@ namespace KristofferStrube.Blazor.FileSystem;
 /// </summary>
 /// <remarks><see href="https://fs.spec.whatwg.org/#api-filesystemdirectoryhandle">See the API definition here</see>.</remarks>
 [IJSWrapperConverter]
-public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSystemDirectoryHandle>
+public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSystemDirectoryHandle>, IPairAsyncIterable<FileSystemDirectoryHandle, string, FileSystemHandle>
 {
     /// <inheritdoc/>
     public static new async Task<FileSystemDirectoryHandle> CreateAsync(IJSRuntime jSRuntime, IJSObjectReference jSReference)
@@ -24,51 +24,6 @@ public class FileSystemDirectoryHandle : FileSystemHandle, IJSCreatable<FileSyst
 
     /// <inheritdoc cref="CreateAsync(IJSRuntime, IJSObjectReference, CreationOptions)"/>
     protected FileSystemDirectoryHandle(IJSRuntime jSRuntime, IJSObjectReference jSReference, CreationOptions options) : base(jSRuntime, jSReference, options) { }
-
-    /// <summary>
-    /// Gets all <see cref="FileSystemHandle"/>s in the directory.
-    /// </summary>
-    public async Task<IFileSystemHandle[]> ValuesAsync()
-    {
-        IJSObjectReference helper = await helperTask.Value;
-        IJSObjectReference jSValues = await JSReference.InvokeAsync<IJSObjectReference>("values");
-        IJSObjectReference jSEntries = await helper.InvokeAsync<IJSObjectReference>("arrayFrom", jSValues);
-        int length = await helper.InvokeAsync<int>("size", jSEntries);
-        return await Task.WhenAll(
-            Enumerable
-                .Range(0, length)
-                .Select<int, Task<FileSystemHandle>>(async i =>
-                    {
-                        await using FileSystemHandle fileSystemHandle = await FileSystemHandle.CreateAsync(
-                            JSRuntime,
-                            await jSEntries.InvokeAsync<IJSObjectReference>("at", i),
-                            new()
-                            {
-                                DisposesJSReference = false // We explicitly show that we don't expose the reference as it is used later.
-                            }
-                        );
-
-                        FileSystemHandleKind kind = await fileSystemHandle.GetKindAsync();
-
-                        if (kind is FileSystemHandleKind.File)
-                        {
-                            return await FileSystemFileHandle.CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
-                            {
-                                DisposesJSReference = true
-                            });
-                        }
-                        else
-                        {
-                            return await CreateAsync(JSRuntime, fileSystemHandle.JSReference, new()
-                            {
-                                DisposesJSReference = true
-                            });
-                        }
-                    }
-                )
-                .ToArray()
-        );
-    }
 
     /// <summary>
     /// Returns a handle for a file named <paramref name="name"/> in the directory entry locatable by directoryHandle’s locator.
