@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Removed synchronous `FileSystemDirectoryHandle.Create`, `FileSystemFileHandle.Create`, `FileSystemHandle.Create`, and `FileSystemWritableFileStream.Create` creator methods in favor of asynchronous `CreateAsync` methods.
 - Removed `FileSystemOptions` class and the overloaded methods that used it for customizing the helper-module path, as the same could be achieved with an `importmap`.
+- Removed `ValuesAsync` methods from `FileSystemDirectoryHandle` and `FileSystemDirectoryHandleInProcess`. Use the `KeysAsync`, `ValuesAsync`, and `EntriesAsync` methods exposed through `IPairAsyncIterable` instead.
 ### Changed
 - Changed the version of `Blazor.FileAPI` to use the newest version, which is 0.4.0.
 - Changed constructors of `FileSystemHandle`, `FileSystemHandleInProcess`, `FileSystemFileHandle`, `FileSystemFileHandleInProcess`, `FileSystemDirectoryHandle`, `FileSystemDirectoryHandleInProcess`, and `FileSystemWritableFileStreamInProcess` to be protected instead of internal so that they can be extended.
@@ -17,8 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added target for .NET 8.
 - Added `CreateAsync` creator methods for all wrapper classes that were missing them.
 - Added `IAsyncDisposable` implementation to all wrapper classes that ensures that their helpers and `JSReference`s are disposed.
-### Fixed
-- Fixed that `FileSystemDirectoryHandleInProcess.ValuesAsync` would instantiate a helper module, which would not be disposed.
+- Added `IPairAsyncIterable` interface to `FileSystemDirectoryHandle`, which exposes extension methods for iterating the name-handle pairs in a directory.
 
 ## [0.3.1] - 2023-10-19
 ### Fixed
