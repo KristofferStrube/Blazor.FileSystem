@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-04
+- Changed the version of `Blazor.FileAPI` to use the newest version, which is 0.4.2.
+
 ## [1.0.0] - 2026-03-31
 ### Removed
 - Removed synchronous `FileSystemDirectoryHandle.Create`, `FileSystemFileHandle.Create`, `FileSystemHandle.Create`, and `FileSystemWritableFileStream.Create` creator methods in favor of asynchronous `CreateAsync` methods.
