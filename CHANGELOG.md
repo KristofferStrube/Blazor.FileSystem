@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-04-12
+- Changed the version of `Blazor.FileAPI` to use the newest version, which is 0.4.4.
+
 ## [1.0.2] - 2026-04-09
 - Changed the version of `Blazor.FileAPI` to use the newest version, which is 0.4.3.
 
